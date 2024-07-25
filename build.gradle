@@ -72,6 +72,11 @@ tasks.assemble {
 }
 
 publishing {
+    publications {
+        gpr(MavenPublication) {
+            from(components.java)
+        }
+    }
     repositories {
         maven {
             name = "GitHubPackages"
