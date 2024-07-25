@@ -2,7 +2,6 @@ package co.killionrevival.killioncommons.listeners;
 
 import co.killionrevival.killioncommons.KillionCommons;
 import org.bukkit.entity.Mob;
-import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,8 +15,7 @@ import java.util.List;
 public class KillionGameplayListeners implements Listener {
     final static List<EntityDamageEvent.DamageCause> playerDamageCauses = List.of(
             EntityDamageEvent.DamageCause.ENTITY_ATTACK,
-            EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK
-    );
+            EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK);
 
     @EventHandler
     public void removeMobDropsUnlessKilledByPlayer(final EntityDeathEvent event) {
@@ -28,8 +26,7 @@ public class KillionGameplayListeners implements Listener {
         if (cause == null) {
             KillionCommons.getApi().getConsoleUtil().sendDebug(
                     "Mob died but had no last cause of damage, cannot prevent event." +
-                    "\nMob: " + eventMob.getName()
-            );
+                            "\nMob: " + eventMob.getName());
             return;
         }
 
@@ -45,9 +42,15 @@ public class KillionGameplayListeners implements Listener {
      */
     @EventHandler
     public void onlyAllowStrengthOne(final EntityPotionEffectEvent event) {
-        if (!KillionCommons.getInstance().getConfig().getBoolean("disable-strength-2")) { return; }
-        if (event.getNewEffect() == null) { return; }
-        if (!event.getNewEffect().getType().equals(PotionEffectType.INCREASE_DAMAGE)) { return; }
+        if (!KillionCommons.getInstance().getConfig().getBoolean("disable-strength-2")) {
+            return;
+        }
+        if (event.getNewEffect() == null) {
+            return;
+        }
+        if (!event.getNewEffect().getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+            return;
+        }
 
         int strength = event.getNewEffect().getAmplifier();
         boolean enableOnBeacons = KillionCommons.getInstance().getConfig().getBoolean("enable-strength-2-on-beacons");
