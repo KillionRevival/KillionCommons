@@ -6,7 +6,6 @@ import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
 import com.earth2me.essentials.Essentials;
 import lombok.Getter;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -47,7 +46,8 @@ public final class KillionCommons extends JavaPlugin {
     private void initEssentials() {
         Plugin essentials = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
         if (essentials == null) {
-            api.getConsoleUtil().sendError("Essentials is not loaded. Items will not attempt to be loaded into Essentials itemdb.");
+            api.getConsoleUtil()
+                    .sendError("Essentials is not loaded. Items will not attempt to be loaded into Essentials itemdb.");
             return;
         }
 

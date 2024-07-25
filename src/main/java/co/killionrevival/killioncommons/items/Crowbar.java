@@ -3,7 +3,6 @@ package co.killionrevival.killioncommons.items;
 import co.killionrevival.killioncommons.KillionCommons;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -27,12 +26,12 @@ public class Crowbar {
         final ItemMeta meta = crowbar.getItemMeta();
         meta.displayName(
                 Component.text("" + ChatColor.RESET)
-                         .color(TextColor.color(0x3F88C5))
-                         .append(Component.text("Right click me on a spawner!"))
-        );
+                        .color(TextColor.color(0x3F88C5))
+                        .append(Component.text("Right click me on a spawner!")));
         crowbar.setAmount(1);
         List<Component> lore = new ArrayList<>();
-        lore.add(Component.text("Right click on a spawner to replace this item with the spawner.").color(TextColor.color(0xD00000)));
+        lore.add(Component.text("Right click on a spawner to replace this item with the spawner.")
+                .color(TextColor.color(0xD00000)));
         lore.add(Component.text("No refunds!").color(TextColor.color(0xD00000)));
         meta.lore(lore);
 
