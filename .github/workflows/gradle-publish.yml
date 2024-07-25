@@ -34,7 +34,7 @@ jobs:
 
       - name: Build Project
         id: build
-        uses: KillionRevival/gradle-builder-action@v1.1
+        uses: KillionRevival/gradle-builder-action@v1
 
       - name: Upload Release Asset
         id: release
