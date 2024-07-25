@@ -45,3 +45,5 @@ jobs:
       - name: Deploy to package repo
         id: deploy
         uses: KillionRevival/gradle-deploy-action@v1
+        with:
+          secret-token: ${{ secrets.GITHUB_TOKEN }}
