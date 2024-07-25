@@ -74,6 +74,8 @@ tasks.assemble {
 publishing {
     publications {
         gpr(MavenPublication) {
+            artifactId 'killioncommons'
+
             from(components.java)
         }
     }
