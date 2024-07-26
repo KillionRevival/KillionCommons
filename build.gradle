@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'co.killionrevival'
-version = '1.1.0-SNAPSHOT'
+version = '1.2.0-SNAPSHOT'
 
 repositories {
     gradlePluginPortal()
@@ -72,15 +72,18 @@ processResources {
 }
 
 tasks.assemble {
-    dependsOn(tasks.reobfJar)
     dependsOn(tasks.shadowJar)
+    dependsOn(tasks.reobfJar)
 }
 
 publishing {
     publications {
         gpr(MavenPublication) {
-            from(components.java)
+            from components.java
             artifactId 'killioncommons'
+            artifact(tasks.shadowJar) {
+                classifier = null
+            }
         }
     }
     repositories {
@@ -99,6 +102,7 @@ shadowJar {
   configurations = [project.configurations.shadow]
   archiveBaseName.set(project.name)
   archiveVersion.set(project.version)
-  archiveClassifier.set('') // Removes the '-all' suffix
+  archiveClassifier.set('')
   mergeServiceFiles()
+  minimize()
 }
