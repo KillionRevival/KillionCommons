@@ -13,7 +13,6 @@ import java.sql.Statement;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import co.killionrevival.killioncommons.KillionCommons;
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.util.ConsoleUtil;
 
@@ -27,8 +26,8 @@ public abstract class DatabaseConnection {
     private Connection connection = null;
     private ConsoleUtil logger;
 
-    protected DatabaseConnection() {
-        this.logger = KillionCommons.getApi().getConsoleUtil();
+    protected DatabaseConnection(ConsoleUtil logger) {
+        this.logger = logger;
         this.objectMapper = new ObjectMapper();
 
         this.credentials = this.getCredentials();
@@ -42,7 +41,7 @@ public abstract class DatabaseConnection {
             try {
                 return objectMapper.readValue(new File(this.credentialFilePath), DatabaseCredentials.class);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.sendError(e.getMessage());
             }
         } else {
             logger.sendError("Credentials file does not exist at " + this.credentialFilePath);
@@ -59,10 +58,10 @@ public abstract class DatabaseConnection {
                         this.credentials.getPassword());
                 logger.sendInfo("Connected to Database!");
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.sendError(e.getMessage());
                 throw new RuntimeException("Error connecting to the database", e);
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                logger.sendError(e.getMessage());
             }
         }
         return connection;
@@ -84,6 +83,7 @@ public abstract class DatabaseConnection {
             Statement stmt = this.connection.createStatement();
             stmt.execute(query);
         } catch (SQLException e) {
+            logger.sendError(e.getMessage());
             throw new Exception("executeQuery failed!");
         }
     }
@@ -98,6 +98,7 @@ public abstract class DatabaseConnection {
             }
             pstmt.executeUpdate();
         } catch (SQLException e) {
+            logger.sendError(e.getMessage());
             throw new Exception("executeUpdate failed!");
         }
     }
@@ -111,6 +112,7 @@ public abstract class DatabaseConnection {
             }
             rs = pstmt.executeQuery();
         } catch (SQLException e) {
+            logger.sendError(e.getMessage());
             throw new Exception("fetchQuery failed!");
         }
         return rs;
@@ -122,6 +124,7 @@ public abstract class DatabaseConnection {
             this.executeQuery(query);
             return true;
         } catch (Exception e) {
+            logger.sendError(e.getMessage());
             logger.sendError("Failed to create schema: " + schemaName);
         }
         return false;
