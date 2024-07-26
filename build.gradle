@@ -2,10 +2,11 @@ plugins {
     id 'java'
     id 'maven-publish'
     id("io.papermc.paperweight.userdev") version "1.7.1"
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'co.killionrevival'
-version = '1.1.1-SNAPSHOT'
+version = '1.1.2-SNAPSHOT'
 
 repositories {
     gradlePluginPortal()
@@ -92,4 +93,9 @@ publishing {
             }
         }
     }
+}
+
+shadowJar {
+    relocate 'com.fasterxml.jackson', 'co.killionrevival.killioncommons.shaded.jackson'
+    relocate 'org.postgresql', 'co.killionrevival.killioncommons.shaded.postgresql'
 }
