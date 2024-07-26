@@ -97,4 +97,8 @@ publishing {
 
 shadowJar {
   configurations = [project.configurations.shadow]
+  archiveBaseName.set(project.name)
+  archiveVersion.set(project.version)
+  archiveClassifier.set('') // Removes the '-all' suffix
+  mergeServiceFiles()
 }
