@@ -34,6 +34,9 @@ public abstract class DatabaseConnection {
         this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(),
                 credentials.getDatabase());
         this.connection = this.createConnection();
+        if (this.connection == null) {
+            logger.sendDebug("Connection is null");
+        }
     }
 
     private DatabaseCredentials getCredentials() {
@@ -58,10 +61,13 @@ public abstract class DatabaseConnection {
                         this.credentials.getPassword());
                 logger.sendInfo("Connected to Database!");
             } catch (SQLException e) {
-                logger.sendError(e.getMessage());
+                logger.sendError("ERROR: " + e.getMessage());
                 throw new RuntimeException("Error connecting to the database", e);
             } catch (ClassNotFoundException e) {
-                logger.sendError(e.getMessage());
+                logger.sendError("ERROR: " + e.getMessage());
+                throw new RuntimeException("Failed to find postgres driver", e);
+            } catch (Exception e) {
+                logger.sendError("ERROR: " + e.getMessage());
             }
         }
         return connection;

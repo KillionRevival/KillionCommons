@@ -72,18 +72,16 @@ processResources {
 }
 
 tasks.assemble {
-    dependsOn(tasks.shadowJar)
     dependsOn(tasks.reobfJar)
+    dependsOn(tasks.shadowJar)
 }
 
 publishing {
     publications {
         gpr(MavenPublication) {
-            from components.java
             artifactId 'killioncommons'
-            artifact(tasks.shadowJar) {
-                classifier = null
-            }
+
+            from(components.java)
         }
     }
     repositories {
@@ -100,9 +98,4 @@ publishing {
 
 shadowJar {
   configurations = [project.configurations.shadow]
-  archiveBaseName.set(project.name)
-  archiveVersion.set(project.version)
-  archiveClassifier.set('')
-  mergeServiceFiles()
-  minimize()
 }
