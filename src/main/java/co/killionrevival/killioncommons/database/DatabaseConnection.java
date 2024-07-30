@@ -14,6 +14,7 @@ import java.sql.Statement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
+import co.killionrevival.killioncommons.database.models.ReturnCode;
 import co.killionrevival.killioncommons.util.ConsoleUtil;
 
 public abstract class DatabaseConnection {
@@ -124,29 +125,29 @@ public abstract class DatabaseConnection {
         return rs;
     }
 
-    protected boolean createSchemaIfNotExists(String schemaName) {
+    protected ReturnCode createSchemaIfNotExists(String schemaName) {
         String query = "CREATE SCHEMA IF NOT EXISTS " + schemaName;
         try {
             this.executeQuery(query);
-            return true;
+            return ReturnCode.SUCCESS;
         } catch (Exception e) {
             logger.sendError(e.getMessage());
             logger.sendError("Failed to create schema: " + schemaName);
         }
-        return false;
+        return ReturnCode.FAILURE;
     }
 
-    protected boolean createEnumIfNotExists(String schemaName, String name, String[] fields) {
+    protected ReturnCode createEnumIfNotExists(String schemaName, String name, String[] fields) {
         String fieldStr = String.join(",", fields);
         String query = "DO $$ BEGIN CREATE TYPE " + schemaName + "." + name + " AS (" + fieldStr
                 + "); EXCEPTION WHEN duplicate_object THEN null; END $$;";
         try {
             this.executeQuery(query);
-            return true;
+            return ReturnCode.SUCCESS;
         } catch (Exception e) {
             logger.sendError(e.getMessage());
             logger.sendError("Failed to create enum: " + name);
         }
-        return false;
+        return ReturnCode.FAILURE;
     }
 }
