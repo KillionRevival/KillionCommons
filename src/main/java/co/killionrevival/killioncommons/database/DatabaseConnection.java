@@ -135,4 +135,18 @@ public abstract class DatabaseConnection {
         }
         return false;
     }
+
+    protected boolean createEnumIfNotExists(String schemaName, String name, String[] fields) {
+        String fieldStr = String.join(",", fields);
+        String query = "DO $$ BEGIN CREATE TYPE " + schemaName + "." + name + " AS (" + fieldStr
+                + "); EXCEPTION WHEN duplicate_object THEN null; END $$;";
+        try {
+            this.executeQuery(query);
+            return true;
+        } catch (Exception e) {
+            logger.sendError(e.getMessage());
+            logger.sendError("Failed to create enum: " + name);
+        }
+        return false;
+    }
 }
