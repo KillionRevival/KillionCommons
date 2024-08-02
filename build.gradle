@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'co.killionrevival'
-version = '1.1.5-SNAPSHOT'
+version = '1.1.6-SNAPSHOT'
 
 repositories {
     gradlePluginPortal()
@@ -72,6 +72,7 @@ processResources {
 }
 
 tasks.assemble {
+    dependsOn(tasks.reobfJar)
     dependsOn(tasks.shadowJar)
 }
 
