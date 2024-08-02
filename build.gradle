@@ -85,7 +85,7 @@ publishing {
             artifactId 'killioncommons'
 
             from(components.java)
-            artifact(tasks.shadowJar)
+            artifact(tasks.jar)
         }
     }
     repositories {
