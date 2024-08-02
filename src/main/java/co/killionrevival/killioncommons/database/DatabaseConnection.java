@@ -17,6 +17,12 @@ import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.database.models.ReturnCode;
 import co.killionrevival.killioncommons.util.ConsoleUtil;
 
+/**
+ * Contains all of the methods required for connecting to and running queries
+ * against the postgres database.
+ * 
+ * Must be inherited by another class to use!
+ */
 public abstract class DatabaseConnection {
     private final String credentialFilePath = "/home/container/plugins/PostgresCredentials/credentials.json";
     private final DatabaseCredentials credentials;
@@ -27,6 +33,9 @@ public abstract class DatabaseConnection {
     private Connection connection = null;
     private ConsoleUtil logger;
 
+    /**
+     * @param logger Instance of the ConsoleUtil
+     */
     protected DatabaseConnection(ConsoleUtil logger) {
         this.logger = logger;
         this.objectMapper = new ObjectMapper();
@@ -40,6 +49,11 @@ public abstract class DatabaseConnection {
         }
     }
 
+    /**
+     * Get database credientials from the credentials file
+     * 
+     * @return DatabaseCredentials
+     */
     private DatabaseCredentials getCredentials() {
         if (Files.exists(Paths.get(this.credentialFilePath))) {
             try {
@@ -54,6 +68,11 @@ public abstract class DatabaseConnection {
         return null;
     }
 
+    /**
+     * Creates a connection to the database
+     * 
+     * @return Connection - Connection to the database
+     */
     private Connection createConnection() {
         if (connection == null) {
             try {
@@ -74,6 +93,11 @@ public abstract class DatabaseConnection {
         return connection;
     }
 
+    /**
+     * Closes the connection to the database
+     * 
+     * @throws Exception
+     */
     public void closeConnection() throws Exception {
         try {
             if (this.connection != null) {
@@ -85,6 +109,13 @@ public abstract class DatabaseConnection {
         }
     }
 
+    /**
+     * Execute a query that doesn't expect any parameters
+     * i.e. creating tables, schemas, etc
+     * 
+     * @param query The query to run
+     * @throws Exception
+     */
     protected void executeQuery(String query) throws Exception {
         try {
             Statement stmt = this.connection.createStatement();
@@ -95,6 +126,14 @@ public abstract class DatabaseConnection {
         }
     }
 
+    /**
+     * Execute a query that expects parameters but does not return data
+     * i.e. INSERT, UPDATE, DELETE
+     * 
+     * @param query  The query to run
+     * @param params A list of params, '?' will be replaced with the parameters
+     * @throws Exception
+     */
     protected void executeUpdate(String query, Object... params) throws Exception {
         try {
             PreparedStatement pstmt = this.connection.prepareStatement(query);
@@ -110,6 +149,15 @@ public abstract class DatabaseConnection {
         }
     }
 
+    /**
+     * Execute a query that expects parameters and returns data
+     * i.e. SELECT
+     * 
+     * @param query  The query to run
+     * @param params A list of params, '?' will be replaced with the parameters
+     * @return ResultSet - The results of the query
+     * @throws Exception
+     */
     protected ResultSet fetchQuery(String query, Object... params) throws Exception {
         ResultSet rs = null;
         try {
@@ -125,6 +173,12 @@ public abstract class DatabaseConnection {
         return rs;
     }
 
+    /**
+     * Creates a schema if it does not already exist
+     * 
+     * @param schemaName The name of the schema to create
+     * @return ReturnCode - The status code of the result of the query
+     */
     protected ReturnCode createSchemaIfNotExists(String schemaName) {
         String query = "CREATE SCHEMA IF NOT EXISTS " + schemaName;
         try {
@@ -137,6 +191,14 @@ public abstract class DatabaseConnection {
         return ReturnCode.FAILURE;
     }
 
+    /**
+     * Creates an enum if it does not already exist
+     * 
+     * @param schemaName The name of the schema to add the enum to
+     * @param name       The name of the enum to crate
+     * @param fields     An array of strings that are the contents of the enum
+     * @return ReturnCode - The status code of the result of the query
+     */
     protected ReturnCode createEnumIfNotExists(String schemaName, String name, String[] fields) {
         String fieldStr = String.join(",", fields);
         String query = "DO $$ BEGIN CREATE TYPE " + schemaName + "." + name + " AS (" + fieldStr
