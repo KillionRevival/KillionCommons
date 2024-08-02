@@ -84,7 +84,7 @@ publishing {
         gpr(MavenPublication) {
             artifactId 'killioncommons'
 
-            artifact(tasks.jar)
+            from(components.java)
         }
     }
     repositories {
