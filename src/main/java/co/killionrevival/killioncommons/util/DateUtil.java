@@ -1,13 +1,13 @@
 package co.killionrevival.killioncommons.util;
 
-import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class DateUtil {
-    private static SimpleDateFormat HUMAN_READABLE_DATE = new SimpleDateFormat("dd MMMM yyyy at hh:mm:ss");
+    private static DateTimeFormatter HUMAN_READABLE_DATE = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' hh:mm:ss");
 
     /**
      * Returns a String in an example format of:
