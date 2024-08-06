@@ -1,12 +1,14 @@
 package co.killionrevival.killioncommons.util;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.Plugin;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@Deprecated
 public class ConsoleUtil {
     private final Boolean isDebugMode;
     private final MessageUtil messageUtil;
@@ -24,11 +26,15 @@ public class ConsoleUtil {
     }
 
     public void sendInfo(String message) {
-        sendFormatMessage("&b" + message);
+        sendFormatMessage(messageUtil.colorMessage(ChatColor.AQUA, message));
+    }
+
+    public void sendWarning(String message) {
+        sendFormatMessage(messageUtil.colorMessage(ChatColor.GOLD, message));
     }
 
     public void sendError(String message) {
-        sendFormatMessage("&c" + message);
+        sendFormatMessage(messageUtil.colorMessage(ChatColor.RED, message));
     }
 
     public void sendThrowable(Throwable t) {
@@ -36,12 +42,12 @@ public class ConsoleUtil {
     }
 
     public void sendSuccess(String message) {
-        sendFormatMessage("§2" + message);
+        sendFormatMessage(messageUtil.colorMessage(ChatColor.DARK_GREEN, message));
     }
 
     public void sendDebug(String message) {
         if (isDebugMode) {
-            sendFormatMessage("&d" + message);
+            sendFormatMessage(messageUtil.colorMessage(ChatColor.LIGHT_PURPLE, message));
         }
     }
 }

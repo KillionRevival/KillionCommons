@@ -8,8 +8,7 @@ public class MessageUtil {
     private String prefix;
 
     public MessageUtil(
-            final Plugin plugin
-    ) {
+            final Plugin plugin) {
         this.prefix = plugin.getConfig().getString("plugin-prefix");
     }
 
@@ -39,5 +38,9 @@ public class MessageUtil {
         } else {
             return ChatColor.translateAlternateColorCodes('&', message);
         }
+    }
+
+    public String colorMessage(ChatColor color, String message) {
+        return "&" + color.getChar() + message;
     }
 }
