@@ -58,7 +58,7 @@ public class Config<T> {
                 KillionCommons.getInstance().saveResource("config.json", false);
                 try {
                     DefaultConfig c = objectMapper.readValue(configFile, DefaultConfig.class);
-                    c.setPlugin_prefix("&8[&6" + KillionCommons.getInstance().getName() + "&8]&r");
+                    c.setPluginPrefix("&8[&6" + KillionCommons.getInstance().getName() + "&8]&r");
                     objectMapper.writerWithDefaultPrettyPrinter().writeValue(configFile, c);
                 } catch (IOException e) {
                     e.printStackTrace();
