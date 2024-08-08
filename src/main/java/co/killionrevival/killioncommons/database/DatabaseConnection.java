@@ -1,6 +1,8 @@
 package co.killionrevival.killioncommons.database;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -11,11 +13,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.database.models.ReturnCode;
 import co.killionrevival.killioncommons.util.ConsoleUtil;
+import com.google.gson.Gson;
 
 /**
  * Contains all of the methods required for connecting to and running queries
@@ -28,7 +29,7 @@ public abstract class DatabaseConnection {
     private final DatabaseCredentials credentials;
     private final String url;
 
-    private final ObjectMapper objectMapper;
+    private final Gson gson;
 
     private Connection connection = null;
     private ConsoleUtil logger;
@@ -38,7 +39,7 @@ public abstract class DatabaseConnection {
      */
     protected DatabaseConnection(ConsoleUtil logger) {
         this.logger = logger;
-        this.objectMapper = new ObjectMapper();
+        this.gson = new Gson();
 
         this.credentials = this.getCredentials();
         this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(),
@@ -56,8 +57,9 @@ public abstract class DatabaseConnection {
      */
     private DatabaseCredentials getCredentials() {
         if (Files.exists(Paths.get(this.credentialFilePath))) {
-            try {
-                return objectMapper.readValue(new File(this.credentialFilePath), DatabaseCredentials.class);
+            final File credFile = new File(this.credentialFilePath);
+            try (FileReader reader = new FileReader(credFile)){
+                return gson.fromJson(reader, DatabaseCredentials.class);
             } catch (IOException e) {
                 logger.sendError(e.getMessage());
             }

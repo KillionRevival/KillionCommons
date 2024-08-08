@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'co.killionrevival'
-version = '1.1.6-SNAPSHOT'
+version = '1.2.0-SNAPSHOT'
 
 repositories {
     gradlePluginPortal()
@@ -31,7 +31,7 @@ dependencies {
     paperweight.paperDevBundle('1.18.2-R0.1-SNAPSHOT')
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    implementation 'com.google.code.gson:gson:2.11.0'
     shadow 'org.postgresql:postgresql:42.7.3'
 
     compileOnly ("com.github.MilkBowl:VaultAPI:1.7") {
@@ -51,6 +51,9 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
+
+    withJavadocJar()
+    withSourcesJar()
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -67,21 +70,22 @@ processResources {
     filteringCharset 'UTF-8'
     filesMatching('plugin.yml') {
         expand props
-        expand version: project.version
     }
 }
 
-tasks.assemble {
-    dependsOn(tasks.reobfJar)
-    dependsOn(tasks.shadowJar)
+
+assemble {
+    dependsOn reobfJar
 }
 
 publishing {
     publications {
         gpr(MavenPublication) {
-            artifactId 'killioncommons'
-
-            from(components.java)
+            artifacts {
+                artifact reobfJar.outputJar
+                artifact sourcesJar
+                artifact javadocJar
+            }
         }
     }
     repositories {
@@ -94,8 +98,4 @@ publishing {
             }
         }
     }
-}
-
-shadowJar {
-  configurations = [project.configurations.shadow]
 }
