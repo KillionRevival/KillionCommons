@@ -34,13 +34,13 @@ jobs:
 
       - name: Build Project
         id: build
-        uses: KillionRevival/gradle-builder-action@v1
+        uses: KillionRevival/gradle-builder-action@v2
         with:
           token: ${{ secrets.PAT }}
 
       - name: Upload Release Asset
         id: release
-        uses: KillionRevival/release-action@v1
+        uses: KillionRevival/release-action@v2
         with:
           jar-path: ${{ steps.build.outputs.jar-path }}
 
