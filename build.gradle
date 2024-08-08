@@ -81,6 +81,8 @@ assemble {
 publishing {
     publications {
         gpr(MavenPublication) {
+            artifactId 'killioncommons'
+
             artifacts {
                 artifact reobfJar.outputJar
                 artifact sourcesJar
