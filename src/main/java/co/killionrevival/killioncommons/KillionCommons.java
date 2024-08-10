@@ -1,22 +1,22 @@
 package co.killionrevival.killioncommons;
 
-import co.killionrevival.killioncommons.compat.EssentialsItemResolver;
+import co.killionrevival.killioncommons.compat.EssentialsManager;
 import co.killionrevival.killioncommons.listeners.CrowbarListeners;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
-import com.earth2me.essentials.Essentials;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class KillionCommons extends JavaPlugin {
-    private static Essentials essentialsInstance;
-
     @Getter
     private static KillionCommons instance;
 
     @Getter
     private static KillionCommonsApi api;
+
+    @Getter
+    private EssentialsManager essentialsManager;
 
     @Override
     public void onEnable() {
@@ -24,7 +24,7 @@ public final class KillionCommons extends JavaPlugin {
         saveDefaultConfig();
         instance = this;
         api = new KillionCommonsApi(this);
-        initEssentials();
+        initCompat();
         initListeners();
         api.getConsoleUtil().sendSuccess("KillionCommons has been enabled.");
     }
@@ -32,7 +32,7 @@ public final class KillionCommons extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        destroyEssentials();
+        destroyCompat();
         api.getConsoleUtil().sendSuccess("KillionCommons has been disabled.");
     }
 
@@ -42,34 +42,21 @@ public final class KillionCommons extends JavaPlugin {
         api.getConsoleUtil().sendSuccess("KillionCommons listeners initialized.");
     }
 
-    // region Essentials
-    private void initEssentials() {
-        Plugin essentials = Bukkit.getServer().getPluginManager().getPlugin("Essentials");
-        if (essentials == null) {
-            api.getConsoleUtil()
-                    .sendError("Essentials is not loaded. Items will not attempt to be loaded into Essentials itemdb.");
-            return;
+    private void initCompat() {
+        final Plugin essentials = Bukkit.getPluginManager().getPlugin("Essentials");
+        if (essentials != null && essentials.isEnabled()) {
+            essentialsManager = new EssentialsManager();
+            essentialsManager.init(essentials);
+        }
+        else {
+            KillionCommons.getApi().getConsoleUtil().sendError("Essentials is not loaded. Items will not attempt to be loaded into Essentials itemdb.");
         }
 
-        essentialsInstance = (Essentials) essentials;
-        try {
-            essentialsInstance.getItemDb().registerResolver(this, "killion", new EssentialsItemResolver());
-        } catch (Exception e) {
-            api.getConsoleUtil().sendThrowable(e);
-        }
-
-        api.getConsoleUtil().sendSuccess("Registered Essentials ItemDB.");
     }
 
-    private void destroyEssentials() {
-        if (essentialsInstance == null) {
-            return;
-        }
-
-        try {
-            essentialsInstance.getItemDb().unregisterResolver(this, "killion");
-        } catch (Exception e) {
-            api.getConsoleUtil().sendThrowable(e);
+    private void destroyCompat() {
+        if (essentialsManager != null) {
+            essentialsManager.destroy();
         }
     }
 
