@@ -3,6 +3,6 @@ version: ${version}
 main: co.killionrevival.killioncommons.KillionCommons
 authors: [tut, flyerzrule, Fross, DecryptedX]
 api-version: "1.18"
-depend:
+softdepend:
   - Essentials
   - Vault
