@@ -18,7 +18,7 @@ public class CrowbarListeners implements Listener {
     public void onCrowbarPlace(final BlockPlaceEvent event) {
         if (Crowbar.isCrowbar(event.getItemInHand())) {
             event.setCancelled(true);
-            KillionCommons.getApi()
+            KillionCommons.getUtil()
                           .getMessageUtil()
                           .sendMessage(event.getPlayer(), "You can't place a crowbar.");
         }
