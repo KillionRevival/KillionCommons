@@ -24,7 +24,7 @@ public class KillionGameplayListeners implements Listener {
         }
         final EntityDamageEvent cause = event.getEntity().getLastDamageCause();
         if (cause == null) {
-            KillionCommons.getApi().getConsoleUtil().sendDebug(
+            KillionCommons.getUtil().getConsoleUtil().sendDebug(
                     "Mob died but had no last cause of damage, cannot prevent event." +
                             "\nMob: " + eventMob.getName());
             return;

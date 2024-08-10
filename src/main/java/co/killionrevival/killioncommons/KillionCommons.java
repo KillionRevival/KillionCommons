@@ -3,6 +3,7 @@ package co.killionrevival.killioncommons;
 import co.killionrevival.killioncommons.compat.EssentialsManager;
 import co.killionrevival.killioncommons.listeners.CrowbarListeners;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
+import co.killionrevival.killioncommons.npc.NpcManager;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -13,7 +14,10 @@ public final class KillionCommons extends JavaPlugin {
     private static KillionCommons instance;
 
     @Getter
-    private static KillionCommonsApi api;
+    private static KillionUtilities util;
+
+    @Getter
+    private NpcManager npcManager;
 
     @Getter
     private EssentialsManager essentialsManager;
@@ -23,23 +27,28 @@ public final class KillionCommons extends JavaPlugin {
         // Plugin startup logic
         saveDefaultConfig();
         instance = this;
-        api = new KillionCommonsApi(this);
+        util = new KillionUtilities(this);
         initCompat();
         initListeners();
-        api.getConsoleUtil().sendSuccess("KillionCommons has been enabled.");
+        initManagers();
+        util.getConsoleUtil().sendSuccess("KillionCommons has been enabled.");
     }
 
     @Override
     public void onDisable() {
         // Plugin shutdown logic
         destroyCompat();
-        api.getConsoleUtil().sendSuccess("KillionCommons has been disabled.");
+        util.getConsoleUtil().sendSuccess("KillionCommons has been disabled.");
+    }
+
+    private void initManagers() {
+        this.npcManager = new NpcManager();
     }
 
     private void initListeners() {
         getServer().getPluginManager().registerEvents(new CrowbarListeners(), this);
         getServer().getPluginManager().registerEvents(new KillionGameplayListeners(), this);
-        api.getConsoleUtil().sendSuccess("KillionCommons listeners initialized.");
+        util.getConsoleUtil().sendSuccess("KillionCommons listeners initialized.");
     }
 
     private void initCompat() {
@@ -49,7 +58,7 @@ public final class KillionCommons extends JavaPlugin {
             essentialsManager.init(essentials);
         }
         else {
-            KillionCommons.getApi().getConsoleUtil().sendError("Essentials is not loaded. Items will not attempt to be loaded into Essentials itemdb.");
+            KillionCommons.getUtil().getConsoleUtil().sendError("Essentials is not loaded. Items will not attempt to be loaded into Essentials itemdb.");
         }
 
     }

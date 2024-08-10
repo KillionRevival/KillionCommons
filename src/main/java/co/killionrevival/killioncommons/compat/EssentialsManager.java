@@ -16,10 +16,10 @@ public class EssentialsManager implements Compat {
         try {
             this.essentials.getItemDb().registerResolver(KillionCommons.getInstance(), "killion", new EssentialsItemResolver());
         } catch (Exception e) {
-            KillionCommons.getApi().getConsoleUtil().sendThrowable(e);
+            KillionCommons.getUtil().getConsoleUtil().sendThrowable(e);
         }
 
-        KillionCommons.getApi().getConsoleUtil().sendSuccess("Registered Essentials ItemDB.");
+        KillionCommons.getUtil().getConsoleUtil().sendSuccess("Registered Essentials ItemDB.");
     }
 
     public void destroy() {
@@ -30,7 +30,7 @@ public class EssentialsManager implements Compat {
         try {
             this.essentials.getItemDb().unregisterResolver(KillionCommons.getInstance(), "killion");
         } catch (Exception e) {
-            KillionCommons.getApi().getConsoleUtil().sendThrowable(e);
+            KillionCommons.getUtil().getConsoleUtil().sendThrowable(e);
         }
     }
 }
