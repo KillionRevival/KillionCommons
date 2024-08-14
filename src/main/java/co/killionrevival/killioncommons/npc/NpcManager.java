@@ -5,14 +5,13 @@ import co.killionrevival.killioncommons.npc.events.KillionNpcSpawnEvent;
 import co.killionrevival.killioncommons.pojos.SkinData;
 import co.killionrevival.killioncommons.util.ConsoleUtil;
 import co.killionrevival.killioncommons.util.SkinUtil;
-import com.comphenix.protocol.wrappers.WrappedGameProfile;
+import com.destroystokyo.paper.profile.PlayerProfile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -29,20 +28,22 @@ public class NpcManager {
     final static KillionCommons instance = KillionCommons.getInstance();
     final ConsoleUtil consoleUtil;
     final SkinUtil skinUtil;
-    final Map<UUID, ServerPlayer> npcs;
+    final Map<Integer, IKillionNpc> npcs;
+    final Map<Integer, UUID> npcIdToUuid;
 
     public NpcManager() {
         npcs = new ConcurrentHashMap<>();
+        npcIdToUuid = new ConcurrentHashMap<>();
         consoleUtil = KillionCommons.getUtil().getConsoleUtil();
         skinUtil = KillionCommons.getUtil().getSkinUtil();
     }
 
     public void spawn(
-            final KillionNpc npcToSpawn,
+            final IKillionNpc npcToSpawn,
             final Location locationToSpawnAt
     ) {
         final CraftWorld world = (CraftWorld) locationToSpawnAt.getWorld();
-        final ServerPlayer npc = getServerPlayer(npcToSpawn, locationToSpawnAt, world);
+        final KillionNpcNms npc = getKillionNpcNms(npcToSpawn, locationToSpawnAt, world);
         final ArrayList<Player> playersInRender = new ArrayList<>(world.getNearbyPlayers(locationToSpawnAt, 128));
 
         final KillionNpcSpawnEvent event = new KillionNpcSpawnEvent(npcToSpawn, locationToSpawnAt, playersInRender);
@@ -51,8 +52,8 @@ public class NpcManager {
         if (event.isCancelled()) {
             return;
         }
-
-        npcs.put(npcToSpawn.getNpcUuid(), npc);
+        npcs.put(npc.getId(), npc);
+        npcIdToUuid.put(npc.getId(), npc.getUUID());
         playersInRender.stream()
                        .map(player -> (CraftPlayer) player)
                        .forEach(player -> {
@@ -62,19 +63,33 @@ public class NpcManager {
                        });
     }
 
-    private ServerPlayer getServerPlayer(KillionNpc npcToSpawn, Location locationToSpawnAt, CraftWorld world) {
+    public IKillionNpc getNpcFromCache(final int entityId) {
+        return npcs.get(entityId);
+    }
+
+    public UUID getNpcUuidFromCache(final int npcId) {
+        return npcIdToUuid.get(npcId);
+    }
+
+    private KillionNpcNms getKillionNpcNms(
+            IKillionNpc npcToSpawn,
+            Location locationToSpawnAt,
+            CraftWorld world
+    ) {
         final ServerLevel level = world.getHandle().getLevel();
         final MinecraftServer server = level.getServer();
-        final GameProfile profile = new GameProfile(npcToSpawn.getNpcUuid(), npcToSpawn.getName());
-        if (npcToSpawn.getPlayerSkin() != null) {
-            final SkinData data = KillionCommons.getUtil().getSkinUtil().getSkin(npcToSpawn.getPlayerSkin());
+        final PlayerProfile npcProfile = npcToSpawn.getPlayerRepresentation();
+        final GameProfile profile = new GameProfile(npcProfile.getId(), npcProfile.getName());
+        if (npcToSpawn.getPlayerRepresentation() != null) {
+            final SkinData data = KillionCommons.getUtil().getSkinUtil().getSkin(npcProfile.getId());
             profile.getProperties().put("textures", new Property("textures", data.getTexture(), data.getSignature()));
         }
 
-        final ServerPlayer npc = new ServerPlayer(
+        final KillionNpcNms npc = new KillionNpcNms(
                 server,
                 level,
-                profile
+                profile,
+                npcToSpawn
         );
 
         npc.setPos(locationToSpawnAt.getX(), locationToSpawnAt.getY(), locationToSpawnAt.getZ());

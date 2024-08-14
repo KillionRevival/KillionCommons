@@ -1,6 +1,6 @@
 package co.killionrevival.killioncommons.npc.events;
 
-import co.killionrevival.killioncommons.npc.KillionNpc;
+import co.killionrevival.killioncommons.npc.IKillionNpc;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Location;
@@ -11,7 +11,6 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.UUID;
 
 public class KillionNpcSpawnEvent extends Event implements Cancellable {
     @Getter
@@ -19,14 +18,14 @@ public class KillionNpcSpawnEvent extends Event implements Cancellable {
     private boolean canceled;
 
     @Getter
-    private final KillionNpc npc;
+    private final IKillionNpc npc;
     @Getter
     private final List<Player> playersInRender;
     @Getter @Setter
     private Location spawnLocation;
 
     public KillionNpcSpawnEvent(
-            final KillionNpc npc,
+            final IKillionNpc npc,
             final Location location,
             final List<Player> playersInRender
     ) {

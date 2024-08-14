@@ -2,7 +2,9 @@ name: KillionCommons
 version: ${version}
 main: co.killionrevival.killioncommons.KillionCommons
 authors: [tut, flyerzrule, Fross, DecryptedX]
-api-version: "1.18"
+api-version: "1.20.6"
+depend:
+  - ProtocolLib
 softdepend:
   - Essentials
   - Vault

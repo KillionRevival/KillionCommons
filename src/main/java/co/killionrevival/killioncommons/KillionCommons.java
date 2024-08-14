@@ -4,6 +4,11 @@ import co.killionrevival.killioncommons.compat.EssentialsManager;
 import co.killionrevival.killioncommons.listeners.CrowbarListeners;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
 import co.killionrevival.killioncommons.npc.NpcManager;
+import co.killionrevival.killioncommons.npc.listeners.AttackPacketListener;
+import com.comphenix.protocol.PacketType;
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
+import com.comphenix.protocol.events.PacketAdapter;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
@@ -31,6 +36,7 @@ public final class KillionCommons extends JavaPlugin {
         initCompat();
         initListeners();
         initManagers();
+        initProtocolLib();
         util.getConsoleUtil().sendSuccess("KillionCommons has been enabled.");
     }
 
@@ -61,6 +67,15 @@ public final class KillionCommons extends JavaPlugin {
             KillionCommons.getUtil().getConsoleUtil().sendError("Essentials is not loaded. Items will not attempt to be loaded into Essentials itemdb.");
         }
 
+    }
+
+    private void initProtocolLib() {
+        final ProtocolManager manager = ProtocolLibrary.getProtocolManager();
+        manager.addPacketListener(new AttackPacketListener(
+                new PacketAdapter.AdapterParameteters()
+                        .plugin(this)
+                        .types(PacketType.Play.Client.USE_ENTITY)
+        ));
     }
 
     private void destroyCompat() {
