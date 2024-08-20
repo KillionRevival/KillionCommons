@@ -48,7 +48,7 @@ public class KillionGameplayListeners implements Listener {
         if (event.getNewEffect() == null) {
             return;
         }
-        if (!event.getNewEffect().getType().equals(PotionEffectType.INCREASE_DAMAGE)) {
+        if (!event.getNewEffect().getType().equals(PotionEffectType.STRENGTH)) {
             return;
         }
 

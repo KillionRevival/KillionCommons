@@ -3,6 +3,7 @@ package co.killionrevival.killioncommons.npc;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.Bukkit;
@@ -13,18 +14,20 @@ public class KillionNpcNms extends ServerPlayer implements IKillionNpc  {
     public KillionNpcNms(
             MinecraftServer server,
             ServerLevel world,
-            GameProfile profile
+            GameProfile profile,
+            ClientInformation options
     ) {
-        super(server, world, profile);
+        super(server, world, profile, options);
     }
 
     public KillionNpcNms(
             MinecraftServer server,
             ServerLevel world,
             GameProfile profile,
+            ClientInformation options,
             IKillionNpc npc
     ) {
-        super(server, world, profile);
+        super(server, world, profile, options);
         this.attackable = npc.getAttackable();
     }
 

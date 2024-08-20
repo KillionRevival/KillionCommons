@@ -8,18 +8,21 @@ import co.killionrevival.killioncommons.util.SkinUtil;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_18_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.CraftWorld;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,8 +47,16 @@ public class NpcManager {
     ) {
         final CraftWorld world = (CraftWorld) locationToSpawnAt.getWorld();
         final KillionNpcNms npc = getKillionNpcNms(npcToSpawn, locationToSpawnAt, world);
-        final ArrayList<Player> playersInRender = new ArrayList<>(world.getNearbyPlayers(locationToSpawnAt, 128));
+        final ServerEntity npcEntity = new ServerEntity(
+                world.getHandle().getLevel(),
+                npc,
+                0,
+                false,
+                (packet) -> {},
+                new HashSet<>()
+        );
 
+        final ArrayList<Player> playersInRender = new ArrayList<>(world.getNearbyPlayers(locationToSpawnAt, 128));
         final KillionNpcSpawnEvent event = new KillionNpcSpawnEvent(npcToSpawn, locationToSpawnAt, playersInRender);
         Bukkit.getPluginManager().callEvent(event);
 
@@ -58,8 +69,8 @@ public class NpcManager {
                        .map(player -> (CraftPlayer) player)
                        .forEach(player -> {
                            final ServerGamePacketListenerImpl ps = player.getHandle().connection;
-                           ps.send(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, npc));
-                           ps.send(new ClientboundAddPlayerPacket(npc));
+                           ps.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, npc));
+                           ps.send(npc.getAddEntityPacket(npcEntity));
                        });
     }
 
@@ -89,6 +100,7 @@ public class NpcManager {
                 server,
                 level,
                 profile,
+                ClientInformation.createDefault(),
                 npcToSpawn
         );
 
