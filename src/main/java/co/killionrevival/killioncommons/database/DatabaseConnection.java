@@ -12,11 +12,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.database.models.ReturnCode;
 import co.killionrevival.killioncommons.util.ConsoleUtil;
 import com.google.gson.Gson;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 
 /**
  * Contains all of the methods required for connecting to and running queries
@@ -31,8 +36,8 @@ public abstract class DatabaseConnection {
 
     private final Gson gson;
 
-    private Connection connection = null;
     private ConsoleUtil logger;
+    private HikariDataSource dataSource;
 
     /**
      * @param logger Instance of the ConsoleUtil
@@ -44,10 +49,11 @@ public abstract class DatabaseConnection {
         this.credentials = this.getCredentials();
         this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(),
                 credentials.getDatabase());
-        this.connection = this.createConnection();
-        if (this.connection == null) {
-            logger.sendDebug("Connection is null");
-        }
+        createConnection();
+    }
+
+    protected Connection getConnection() throws SQLException {
+        return dataSource.getConnection();
     }
 
     /**
@@ -75,39 +81,30 @@ public abstract class DatabaseConnection {
      * 
      * @return Connection - Connection to the database
      */
-    private Connection createConnection() {
-        if (connection == null) {
-            try {
-                Class.forName("org.postgresql.Driver");
-                connection = DriverManager.getConnection(this.url, this.credentials.getUsername(),
-                        this.credentials.getPassword());
-                logger.sendInfo("Connected to Database!");
-            } catch (SQLException e) {
-                logger.sendError("ERROR: " + e.getMessage());
-                throw new RuntimeException("Error connecting to the database", e);
-            } catch (ClassNotFoundException e) {
-                logger.sendError("ERROR: " + e.getMessage());
-                throw new RuntimeException("Failed to find postgres driver", e);
-            } catch (Exception e) {
-                logger.sendError("ERROR: " + e.getMessage());
-            }
+    private void createConnection() {
+        try {
+            final HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(this.url);
+            config.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
+            config.setUsername(config.getUsername());
+            config.setPassword(config.getPassword());
+            config.addDataSourceProperty("cachePrepStmts", "true");
+            config.addDataSourceProperty("prepStmtCacheSize", "250");
+            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            dataSource = new HikariDataSource(config);
+            logger.sendInfo("Connected to Database!");
+        } catch (Exception e) {
+            logger.sendError("ERROR: " + e.getMessage());
         }
-        return connection;
     }
 
     /**
      * Closes the connection to the database
-     * 
-     * @throws Exception
      */
     public void closeConnection() throws Exception {
-        try {
-            if (this.connection != null) {
-                this.connection.close();
-                logger.sendInfo("Database Connection closed");
-            }
-        } catch (SQLException e) {
-            throw new Exception("Failed to close DB connection");
+        if (this.dataSource != null) {
+            dataSource.close();
+            logger.sendInfo("Database Connection closed");
         }
     }
 
@@ -119,9 +116,8 @@ public abstract class DatabaseConnection {
      * @throws Exception
      */
     protected void executeQuery(String query) throws Exception {
-        try {
-            Statement stmt = this.connection.createStatement();
-            stmt.execute(query);
+        try (final PreparedStatement stmt = getConnection().prepareStatement(query)) {
+            stmt.execute();
         } catch (SQLException e) {
             logger.sendError(e.getMessage());
             throw new Exception("executeQuery failed!");
@@ -137,14 +133,13 @@ public abstract class DatabaseConnection {
      * @throws Exception
      */
     protected void executeUpdate(String query, Object... params) throws Exception {
-        try {
-            PreparedStatement pstmt = this.connection.prepareStatement(query);
+        try (final PreparedStatement p = getConnection().prepareStatement(query)) {
             if (params != null && params.length > 0) {
                 for (int i = 0; i < params.length; i++) {
-                    pstmt.setObject(i + 1, params[i]);
+                    p.setObject(i + 1, params[i]);
                 }
             }
-            pstmt.executeUpdate();
+            p.executeUpdate();
         } catch (SQLException e) {
             logger.sendError(e.getMessage());
             throw new Exception("executeUpdate failed!");
@@ -161,18 +156,15 @@ public abstract class DatabaseConnection {
      * @throws Exception
      */
     protected ResultSet fetchQuery(String query, Object... params) throws Exception {
-        ResultSet rs = null;
-        try {
-            PreparedStatement pstmt = this.connection.prepareStatement(query);
+        try (final PreparedStatement p = getConnection().prepareStatement(query)) {
             for (int i = 0; i < params.length; i++) {
-                pstmt.setObject(i + 1, params[i]);
+                p.setObject(i + 1, params[i]);
             }
-            rs = pstmt.executeQuery();
+            return p.executeQuery();
         } catch (SQLException e) {
             logger.sendError(e.getMessage());
             throw new Exception("fetchQuery failed!");
         }
-        return rs;
     }
 
     /**
