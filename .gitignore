@@ -118,3 +118,5 @@ run/
 .vscode/
 bin/
 build/
+
+gradle.properties
