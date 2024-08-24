@@ -15,7 +15,9 @@ import java.util.List;
 public class KillionGameplayListeners implements Listener {
     final static List<EntityDamageEvent.DamageCause> playerDamageCauses = List.of(
             EntityDamageEvent.DamageCause.ENTITY_ATTACK,
-            EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK);
+            EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK,
+            EntityDamageEvent.DamageCause.PROJECTILE
+    );
 
     @EventHandler
     public void removeMobDropsUnlessKilledByPlayer(final EntityDeathEvent event) {
