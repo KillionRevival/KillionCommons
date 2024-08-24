@@ -52,13 +52,17 @@ public abstract class DatabaseConnection {
         createConnection();
     }
 
+    protected HikariDataSource getDataSource() {
+        return dataSource;
+    }
+
     protected Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
     /**
      * Get database credientials from the credentials file
-     * 
+     *
      * @return DatabaseCredentials
      */
     private DatabaseCredentials getCredentials() {
@@ -78,7 +82,7 @@ public abstract class DatabaseConnection {
 
     /**
      * Creates a connection to the database
-     * 
+     *
      * @return Connection - Connection to the database
      */
     private void createConnection() {
@@ -111,7 +115,7 @@ public abstract class DatabaseConnection {
     /**
      * Execute a query that doesn't expect any parameters
      * i.e. creating tables, schemas, etc
-     * 
+     *
      * @param query The query to run
      * @throws Exception
      */
@@ -127,7 +131,7 @@ public abstract class DatabaseConnection {
     /**
      * Execute a query that expects parameters but does not return data
      * i.e. INSERT, UPDATE, DELETE
-     * 
+     *
      * @param query  The query to run
      * @param params A list of params, '?' will be replaced with the parameters
      * @throws Exception
@@ -149,7 +153,7 @@ public abstract class DatabaseConnection {
     /**
      * Execute a query that expects parameters and returns data
      * i.e. SELECT
-     * 
+     *
      * @param query  The query to run
      * @param params A list of params, '?' will be replaced with the parameters
      * @return ResultSet - The results of the query
@@ -169,7 +173,7 @@ public abstract class DatabaseConnection {
 
     /**
      * Creates a schema if it does not already exist
-     * 
+     *
      * @param schemaName The name of the schema to create
      * @return ReturnCode - The status code of the result of the query
      */
@@ -187,7 +191,7 @@ public abstract class DatabaseConnection {
 
     /**
      * Creates an enum if it does not already exist
-     * 
+     *
      * @param schemaName The name of the schema to add the enum to
      * @param name       The name of the enum to crate
      * @param fields     An array of strings that are the contents of the enum

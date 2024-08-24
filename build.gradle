@@ -70,6 +70,13 @@ tasks.withType(JavaCompile).configureEach {
     }
 }
 
+tasks.withType(Zip) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.withType(Tar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 processResources {
     def props = [version: version]
     inputs.properties props
