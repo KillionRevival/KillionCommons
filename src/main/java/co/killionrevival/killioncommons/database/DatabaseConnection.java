@@ -1,7 +1,6 @@
 package co.killionrevival.killioncommons.database;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -58,7 +57,7 @@ public abstract class DatabaseConnection {
     private DatabaseCredentials getCredentials() {
         if (Files.exists(Paths.get(this.credentialFilePath))) {
             final File credFile = new File(this.credentialFilePath);
-            try (FileReader reader = new FileReader(credFile)){
+            try (FileReader reader = new FileReader(credFile)) {
                 return gson.fromJson(reader, DatabaseCredentials.class);
             } catch (IOException e) {
                 logger.sendError(e.getMessage());
@@ -109,6 +108,15 @@ public abstract class DatabaseConnection {
         } catch (SQLException e) {
             throw new Exception("Failed to close DB connection");
         }
+    }
+
+    /**
+     * Checks if the connection to the database is open
+     * @return true if the connection is open
+     * @throws SQLException
+     */
+    public boolean isConnected() throws SQLException {
+        return !this.connection.isClosed();
     }
 
     /**
