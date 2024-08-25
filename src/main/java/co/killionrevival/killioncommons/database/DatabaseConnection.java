@@ -151,6 +151,27 @@ public abstract class DatabaseConnection {
     }
 
     /**
+     * Execute an insert that expects parameters and returns a generated key*
+     * @param query  The insert statement to run
+     * @param params A list of params, '?' will be replaced with the parameters
+     * @throws Exception
+     */
+    protected ResultSet insertAndReturnKey(String query, Object... params) throws Exception {
+        try (final PreparedStatement p = getConnection().prepareStatement(query)) {
+            if (params != null && params.length > 0) {
+                for (int i = 0; i < params.length; i++) {
+                    p.setObject(i + 1, params[i]);
+                }
+            }
+            p.executeQuery();
+            return p.getGeneratedKeys();
+        } catch (SQLException e) {
+            logger.sendError(e.getMessage());
+            throw new Exception("executeUpdate failed!");
+        }
+    }
+
+    /**
      * Execute a query that expects parameters and returns data
      * i.e. SELECT
      *
