@@ -3,6 +3,8 @@ package co.killionrevival.killioncommons.util;
 import co.killionrevival.killioncommons.KillionCommons;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Bukkit;
@@ -26,34 +28,39 @@ public class ConfigUtil {
     private final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
 
     private Logger logger;
+    private Class<?> type;
+    private File configFile;
+    private String configFileName;
     private final Plugin plugin;
     private final Path configDirectory;
-    private final File configFile;
-    private final String configFileName;
 
     public ConfigUtil(final Plugin plugin) {
         this.plugin = plugin;
-        configFileName = "config.json";
         configDirectory = plugin.getDataPath();
-        configFile = new File(configDirectory+ "/" + configFileName);
         logger = plugin.getLogger();
+        type = null;
     }
 
-    public ConfigUtil(final String configFileName, final Plugin plugin) {
-        this.configFileName = configFileName;
-        this.plugin = plugin;
-        configDirectory = plugin.getDataPath();
+    public ConfigUtil(final Plugin plugin, Class<?> configClass) {
+        this(plugin);
+        this.configFileName = "config.json";
         configFile = new File(configDirectory+ "/" + configFileName);
+        type = configClass;
+    }
+
+    public ConfigUtil(final String configFileName, final Plugin plugin, Class<?> configClass) {
+        this(plugin);
+        this.configFileName = configFileName;
+        configFile = new File(configDirectory+ "/" + configFileName);
+        type = configClass;
     }
 
     /**
      * Parses the config file that this instance of ConfigUtil is configured for into a POJO representation
-     * @param object Object class to
-     * @return A serialized version of the config file for {@link T}
-     * @param <T> type of object to return
+     * @return A serialized version of the config file for the type registered with this class
      */
-    public <T> T parseConfigToObject(Class<T> object) {
-        return gson.fromJson(getConfigJson(), object);
+    public Object getConfigObject() {
+        return gson.fromJson(getConfigJson(), type);
     }
 
     /**
@@ -62,16 +69,6 @@ public class ConfigUtil {
      * @param object Object to save as the config json file
      */
     public void saveConfig(Object object) {
-        if (!Files.exists(configFile.toPath())) {
-            try {
-                Files.createDirectories(configFile.toPath());
-                Files.createFile(configFile.toPath());
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Could not create config file directory and file", e);
-                return;
-            }
-        }
-
         try (final FileWriter writer = new FileWriter(configFile)) {
             writer.write(gson.toJson(object));
         } catch (IOException e) {
@@ -81,49 +78,50 @@ public class ConfigUtil {
 
     /**
      * Saves the default config for the file name that this ConfigUtil instance
-     * holds. Will pull from the plugin's resources.
+     * holds. Will pull from the plugin's resources folder.
      */
     public void saveDefaultConfig() {
+        if (Files.exists(configFile.toPath())) {
+            return;
+        }
+
         final InputStream defaultConfig = plugin.getResource(configFileName);
         if (defaultConfig == null) {
             logger.severe("Default for file " + configFileName + " does not exist. Creating blank default.");
         }
 
-        final Path filePath = Path.of(getConfigDirectory() + "/" + configFileName);
-        if (!Files.exists(filePath)) {
-            try {
-                Files.createFile(filePath);
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Could not create config file:", e);
-                return;
-            }
-        }
+        createConfigDirectoriesAndFile();
         if (defaultConfig == null) {
             return;
         }
 
         try {
-            Files.copy(defaultConfig, filePath);
+            Files.copy(defaultConfig, configFile.toPath());
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Could not copy default config to config file:", e);
         }
     }
 
     /**
-     * Will return the path of the config directory and create it if it does not exist
-     * @return The path of the plugin's data path.
+     * Get a specific member object of the config as a json element.
+     * Creates the directory, and file if it doesn't exist.
+     * @param node Member node of the base element
+     * @return JsonElement representation
      */
-    public Path getConfigDirectory() {
-        if (!Files.exists(configDirectory)) {
+    public JsonElement getJsonMember(final String node) {
+        saveDefaultConfig();
+        return gson.fromJson(getConfigJson(), JsonObject.class).get(node);
+    }
+
+    private void createConfigDirectoriesAndFile() {
+        if (!Files.exists(configFile.toPath())) {
             try {
-                Files.createDirectories(configDirectory);
-            }
-            catch (Exception e) {
-                logger.log(Level.SEVERE, "Could not create config directory:", e);
-                return configDirectory;
+                Files.createDirectories(configFile.toPath());
+                Files.createFile(configFile.toPath());
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "Could not create config file directory and file", e);
             }
         }
-        return configDirectory;
     }
 
     private String getConfigJson() {

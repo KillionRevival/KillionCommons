@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.plugin.Plugin;
 
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -14,9 +15,16 @@ public class ConsoleUtil {
     private static final ConsoleCommandSender console = Bukkit.getConsoleSender();
 
     public ConsoleUtil(Plugin plugin) {
-        this.isDebugMode = plugin.getConfig().getBoolean("debug-mode");
         this.logger = plugin.getLogger();
         this.messageUtil = new MessageUtil(plugin);
+
+        final InputStream jsonConfig = plugin.getResource("config.json");
+        if (jsonConfig == null) {
+            this.isDebugMode = plugin.getConfig().getBoolean("debug-mode");
+            return;
+        }
+        final ConfigUtil configUtil = new ConfigUtil(plugin);
+        this.isDebugMode = configUtil.getJsonMember("plugin-prefix").getAsBoolean();
     }
 
     public void sendFormatMessage(String message) {

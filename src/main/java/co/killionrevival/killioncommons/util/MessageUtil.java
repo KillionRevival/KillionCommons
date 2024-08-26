@@ -4,13 +4,21 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.io.InputStream;
+
 public class MessageUtil {
     private String prefix;
 
     public MessageUtil(
             final Plugin plugin
     ) {
-        this.prefix = plugin.getConfig().getString("plugin-prefix");
+        final InputStream jsonConfig = plugin.getResource("config.json");
+        if (jsonConfig == null) {
+            this.prefix = plugin.getConfig().getString("plugin-prefix");
+            return;
+        }
+        final ConfigUtil configUtil = new ConfigUtil(plugin);
+        this.prefix = configUtil.getJsonMember("plugin-prefix").getAsString();
     }
 
     public void sendMessage(Player player, String message) {

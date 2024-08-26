@@ -18,10 +18,10 @@ public class KillionUtilities {
     private final ConfigUtil configUtil;
 
     public KillionUtilities(final Plugin plugin) {
+        this.configUtil = new ConfigUtil(plugin);
         this.messageUtil = new MessageUtil(plugin);
         this.broadcastUtil = new BroadcastUtil(plugin);
         this.consoleUtil = new ConsoleUtil(plugin);
         this.skinUtil = new SkinUtil(plugin);
-        this.configUtil = new ConfigUtil(plugin);
     }
 }
