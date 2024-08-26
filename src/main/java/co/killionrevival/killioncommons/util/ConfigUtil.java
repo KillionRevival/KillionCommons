@@ -1,24 +1,24 @@
 package co.killionrevival.killioncommons.util;
 
-import co.killionrevival.killioncommons.KillionCommons;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import lombok.Getter;
-import lombok.Setter;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * This class exists to help read json configuration for your plugin
@@ -85,18 +85,17 @@ public class ConfigUtil {
             return;
         }
 
+        createConfigDirectoriesAndFile();
         final InputStream defaultConfig = plugin.getResource(configFileName);
         if (defaultConfig == null) {
-            logger.severe("Default for file " + configFileName + " does not exist. Creating blank default.");
-        }
-
-        createConfigDirectoriesAndFile();
-        if (defaultConfig == null) {
+            logger.severe("Default for file " + configFileName + " does not exist.");
             return;
         }
-
+        final String text = new BufferedReader(new InputStreamReader(defaultConfig, StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
         try {
-            Files.copy(defaultConfig, configFile.toPath());
+            Files.write(configFile.toPath(), text.getBytes());
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Could not copy default config to config file:", e);
         }
@@ -114,13 +113,15 @@ public class ConfigUtil {
     }
 
     private void createConfigDirectoriesAndFile() {
-        if (!Files.exists(configFile.toPath())) {
-            try {
-                Files.createDirectories(configFile.toPath());
-                Files.createFile(configFile.toPath());
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Could not create config file directory and file", e);
-            }
+        if (Files.exists(configFile.toPath())) {
+            return;
+        }
+
+        try {
+            Files.createDirectories(configFile.toPath().getParent());
+            Files.createFile(configFile.toPath());
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "Could not create config file directory and file", e);
         }
     }
 

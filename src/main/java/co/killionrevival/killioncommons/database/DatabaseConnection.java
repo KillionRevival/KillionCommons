@@ -1,27 +1,23 @@
 package co.killionrevival.killioncommons.database;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+
 
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.database.models.ReturnCode;
+import co.killionrevival.killioncommons.util.ConfigUtil;
 import co.killionrevival.killioncommons.util.ConsoleUtil;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.plugin.Plugin;
 
 /**
  * Contains all of the methods required for connecting to and running queries
@@ -30,7 +26,7 @@ import com.zaxxer.hikari.HikariDataSource;
  * Must be inherited by another class to use!
  */
 public abstract class DatabaseConnection {
-    private final String credentialFilePath = "/home/container/plugins/PostgresCredentials/credentials.json";
+    private String credentialFilePath;
     private final DatabaseCredentials credentials;
     private final String url;
 
@@ -45,10 +41,25 @@ public abstract class DatabaseConnection {
     protected DatabaseConnection(ConsoleUtil logger) {
         this.logger = logger;
         this.gson = new Gson();
-
+        credentialFilePath = "/home/container/plugins/PostgresCredentials/credentials.json";
         this.credentials = this.getCredentials();
         this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(),
                 credentials.getDatabase());
+        createConnection();
+    }
+
+    /**
+     * @param logger Instance of the ConsoleUtil
+     */
+    protected DatabaseConnection(ConsoleUtil logger, Plugin plugin) {
+        this.logger = logger;
+        this.gson = new Gson();
+        if (plugin.getResource("config.json") != null) {
+            final ConfigUtil configUtil = new ConfigUtil(plugin);
+            credentialFilePath = configUtil.getJsonMember("credentialsFilePath").getAsString();
+        }
+        this.credentials = this.getCredentials();
+        this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(), credentials.getDatabase());
         createConnection();
     }
 
@@ -74,7 +85,7 @@ public abstract class DatabaseConnection {
                 logger.sendError(e.getMessage());
             }
         } else {
-            logger.sendError("Credentials file does not exist at " + this.credentialFilePath);
+            logger.sendError("Credentials file does not exist at " + Paths.get(this.credentialFilePath).toAbsolutePath());
             System.out.println("file not found");
         }
         return null;
@@ -87,18 +98,17 @@ public abstract class DatabaseConnection {
      */
     private void createConnection() {
         try {
+            Class.forName("org.postgresql.Driver");
             final HikariConfig config = new HikariConfig();
             config.setJdbcUrl(this.url);
-            config.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
-            config.setUsername(config.getUsername());
-            config.setPassword(config.getPassword());
-            config.addDataSourceProperty("cachePrepStmts", "true");
-            config.addDataSourceProperty("prepStmtCacheSize", "250");
-            config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+            config.setUsername(credentials.getUsername());
+            config.setPassword(credentials.getPassword());
+            config.setConnectionTestQuery("Select 1");
             dataSource = new HikariDataSource(config);
             logger.sendInfo("Connected to Database!");
         } catch (Exception e) {
             logger.sendError("ERROR: " + e.getMessage());
+            logger.sendThrowable(e);
         }
     }
 

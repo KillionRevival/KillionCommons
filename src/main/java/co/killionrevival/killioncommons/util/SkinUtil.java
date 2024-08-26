@@ -31,10 +31,6 @@ public class SkinUtil {
     ) {
         this.plugin = plugin;
         skinsFolder = new File(plugin.getDataFolder(), skinCacheFolderName != null ? skinCacheFolderName : "skins");
-        if (!skinsFolder.exists()) {
-            skinsFolder.mkdir();
-        }
-
     }
 
     public SkinUtil(
@@ -46,6 +42,7 @@ public class SkinUtil {
     public SkinData getSkin(
            final UUID playerId
     ) {
+        createSkinsFolder();
         final File skinFile = new File(skinsFolder, playerId + ".json");
         if (skinFile.exists()) {
             try (InputStream inputStream = new FileInputStream(skinFile)) {
@@ -82,5 +79,11 @@ public class SkinUtil {
             final OfflinePlayer player
     ) {
         return getSkin(player.getUniqueId());
+    }
+
+    private void createSkinsFolder() {
+        if (!skinsFolder.exists()) {
+            skinsFolder.mkdir();
+        }
     }
 }
