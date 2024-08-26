@@ -24,7 +24,7 @@ public class ConsoleUtil {
             return;
         }
         final ConfigUtil configUtil = new ConfigUtil(plugin);
-        this.isDebugMode = configUtil.getJsonMember("plugin-prefix").getAsBoolean();
+        this.isDebugMode = configUtil.getJsonMember("debugMode").getAsBoolean();
     }
 
     public void sendFormatMessage(String message) {

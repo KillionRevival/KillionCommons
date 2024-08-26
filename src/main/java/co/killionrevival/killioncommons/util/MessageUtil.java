@@ -18,7 +18,7 @@ public class MessageUtil {
             return;
         }
         final ConfigUtil configUtil = new ConfigUtil(plugin);
-        this.prefix = configUtil.getJsonMember("plugin-prefix").getAsString();
+        this.prefix = configUtil.getJsonMember("pluginPrefix").getAsString();
     }
 
     public void sendMessage(Player player, String message) {
