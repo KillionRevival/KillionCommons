@@ -24,4 +24,12 @@ public class KillionUtilities {
         this.consoleUtil = new ConsoleUtil(plugin);
         this.skinUtil = new SkinUtil(plugin);
     }
+
+    public KillionUtilities(final Plugin plugin, Class<?> configClass) {
+        this.configUtil = new ConfigUtil(plugin, configClass);
+        this.messageUtil = new MessageUtil(plugin);
+        this.broadcastUtil = new BroadcastUtil(plugin);
+        this.consoleUtil = new ConsoleUtil(plugin);
+        this.skinUtil = new SkinUtil(plugin);
+    }
 }

@@ -37,14 +37,14 @@ public class ConfigUtil {
     public ConfigUtil(final Plugin plugin) {
         this.plugin = plugin;
         configDirectory = plugin.getDataPath();
+        this.configFileName = "config.json";
+        configFile = new File(configDirectory+ "/" + configFileName);
         logger = plugin.getLogger();
         type = null;
     }
 
     public ConfigUtil(final Plugin plugin, Class<?> configClass) {
         this(plugin);
-        this.configFileName = "config.json";
-        configFile = new File(configDirectory+ "/" + configFileName);
         type = configClass;
     }
 
