@@ -62,7 +62,7 @@ public class ConsoleUtil {
      */
     public void sendThrowable(Throwable t) {
         if (LogLevel.ERROR.getLevel() <= this.logLevel.getLevel()) {
-            console.sendMessage(getFormattedMessage("ERROR", "Exception: ", NamedTextColor.DARK_RED));
+            console.sendMessage(getFormattedMessage("EXCEPTION", t.getMessage(), NamedTextColor.DARK_RED));
         }
     }
 

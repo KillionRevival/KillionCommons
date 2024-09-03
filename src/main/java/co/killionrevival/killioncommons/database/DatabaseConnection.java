@@ -9,6 +9,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.database.models.ReturnCode;
@@ -33,7 +35,7 @@ public abstract class DatabaseConnection {
 
     private final Gson gson;
 
-    private ConsoleUtil logger;
+    protected ConsoleUtil logger;
     private HikariDataSource dataSource;
 
     /**
@@ -121,7 +123,6 @@ public abstract class DatabaseConnection {
             dataSource = new HikariDataSource(config);
             logger.sendInfo("Connected to Database!");
         } catch (Exception e) {
-            logger.sendError("ERROR: " + e.getMessage());
             logger.sendThrowable(e);
         }
     }
@@ -224,6 +225,7 @@ public abstract class DatabaseConnection {
      */
     protected ReturnCode createSchemaIfNotExists(String schemaName) {
         String query = "CREATE SCHEMA IF NOT EXISTS " + schemaName;
+        logger.sendDebug("Create schema query: " + query);
         try {
             this.executeQuery(query);
             return ReturnCode.SUCCESS;
@@ -243,9 +245,10 @@ public abstract class DatabaseConnection {
      * @return ReturnCode - The status code of the result of the query
      */
     protected ReturnCode createEnumIfNotExists(String schemaName, String name, String[] fields) {
-        String fieldStr = String.join(",", fields);
-        String query = "DO $$ BEGIN CREATE TYPE " + schemaName + "." + name + " AS (" + fieldStr
-                + "); EXCEPTION WHEN duplicate_object THEN null; END $$;";
+        String fieldStr = Arrays.stream(fields).map(field -> "'" + field + "'").collect(Collectors.joining(","));
+        String query = "DO $$ BEGIN CREATE TYPE " + schemaName + "." + name + " AS ENUM (" + fieldStr
+                + "); EXCEPTION WHEN duplicate_object THEN NULL; END $$;";
+        logger.sendDebug("Create enum query: " + query);
         try {
             this.executeQuery(query);
             return ReturnCode.SUCCESS;
