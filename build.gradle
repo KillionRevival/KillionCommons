@@ -6,8 +6,8 @@ plugins {
     id "io.freefair.lombok" version "8.10"
 }
 
-group = 'co.killionrevival'
-version = '2.0.0-SNAPSHOT'
+group = 'co.killionrevival.killioncommons'
+version = '3.0.0-SNAPSHOT'
 
 repositories {
     gradlePluginPortal()
@@ -40,10 +40,10 @@ dependencies {
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'com.zaxxer:HikariCP:5.1.0'
 
-    compileOnly ("com.github.MilkBowl:VaultAPI:1.7") {
+    compileOnly ("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude group: 'org.bukkit', module: 'bukkit'
     }
-    compileOnly ('net.essentialsx:EssentialsX:2.19.0') {
+    compileOnly ('net.essentialsx:EssentialsX:2.20.1') {
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.spigotmc', module: 'spigot-api'
     }
