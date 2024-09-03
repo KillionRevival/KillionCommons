@@ -1,5 +1,6 @@
 package co.killionrevival.killioncommons.util;
 
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -67,21 +68,20 @@ public class MessageUtil {
      */
     public String formatMessage(String message, Boolean prefix_toggle) {
         if (prefix_toggle) {
-            return prefix + message;
+            return ChatColor.translateAlternateColorCodes('&', prefix + message);
         } else {
-            return message;
+            return ChatColor.translateAlternateColorCodes('&', message);
         }
     }
 
     /**
-     * Colors the message with the specified color.
-     *
-     * @param color   The NamedTextColor to apply to the message
-     * @param message The message to color
-     * @return The colored message as a string
+     * Formats a message with the specified color and prefix.
+     * @param color The color to apply to the message
+     * @param message The message to format
+     * @return The formatted message as a TextComponent
      */
-    public String colorMessage(NamedTextColor color, String message) {
-        TextComponent component = Component.text().content(message).color(color).build();
-        return PlainTextComponentSerializer.plainText().serialize(component);
+    public TextComponent getConsoleComponent(NamedTextColor color, String message) {
+        return Component.text().append(TextFormatUtil.getComponentFromLegacyString(prefix))
+                .append(Component.text().content(message).color(color)).build();
     }
 }

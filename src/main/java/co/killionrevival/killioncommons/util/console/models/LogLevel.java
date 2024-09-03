@@ -1,22 +1,18 @@
 package co.killionrevival.killioncommons.util.console.models;
 
-import java.util.logging.Level;
+import lombok.Getter;
 
 public enum LogLevel {
-    OFF(Level.OFF),
-    ERROR(Level.SEVERE),
-    WARNING(Level.WARNING),
-    INFO(Level.INFO),
-    DEBUG(Level.FINER),
-    ALL(Level.ALL);
+    OFF(0),
+    ERROR(1),
+    WARNING(2),
+    INFO(3),
+    DEBUG(4);
 
-    private Level level;
+    @Getter
+    private final Integer level;
 
-    LogLevel(Level level) {
+    LogLevel(Integer level) {
         this.level = level;
-    }
-
-    public Level getLevel() {
-        return this.level;
     }
 }

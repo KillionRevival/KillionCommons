@@ -1,37 +1,33 @@
 package co.killionrevival.killioncommons.util.console;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
-import org.jline.utils.Log;
 
 import co.killionrevival.killioncommons.util.ConfigUtil;
 import co.killionrevival.killioncommons.util.MessageUtil;
 import co.killionrevival.killioncommons.util.console.models.LogLevel;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.io.InputStream;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ConsoleUtil {
     private LogLevel logLevel;
     private final MessageUtil messageUtil;
-    private final Logger logger;
+    private static final Audience console = Bukkit.getConsoleSender();
 
     /**
      * @param plugin The plugin instance
      */
     public ConsoleUtil(Plugin plugin) {
-        this.logger = plugin.getLogger();
         this.messageUtil = new MessageUtil(plugin);
 
         getLogLevel(plugin);
     }
 
     public ConsoleUtil(Plugin plugin, LogLevel logLevel) {
-        this.logger = plugin.getLogger();
         this.messageUtil = new MessageUtil(plugin);
-
-        this.logger.setLevel(logLevel.getLevel());
     }
 
     /**
@@ -40,7 +36,9 @@ public class ConsoleUtil {
      * @param message The error message to log
      */
     public void sendError(String message) {
-        logger.log(Level.SEVERE, getFormattedMessage(message, NamedTextColor.RED));
+        if (LogLevel.ERROR.getLevel() <= this.logLevel.getLevel()) {
+            console.sendMessage(getFormattedMessage("ERROR", message, NamedTextColor.RED));
+        }
     }
 
     /**
@@ -51,7 +49,10 @@ public class ConsoleUtil {
      * @param e The throwable to log
      */
     public void sendError(String message, Throwable e) {
-        logger.log(Level.SEVERE, getFormattedMessage(message, NamedTextColor.RED), e);
+        if (LogLevel.ERROR.getLevel() <= this.logLevel.getLevel()) {
+            console.sendMessage(getFormattedMessage("ERROR", message, NamedTextColor.RED));
+            this.sendThrowable(e);
+        }
     }
 
     /**
@@ -60,7 +61,9 @@ public class ConsoleUtil {
      * @param t The throwable to log
      */
     public void sendThrowable(Throwable t) {
-        logger.log(Level.SEVERE, getFormattedMessage("Exception: ", NamedTextColor.DARK_RED), t);
+        if (LogLevel.ERROR.getLevel() <= this.logLevel.getLevel()) {
+            console.sendMessage(getFormattedMessage("ERROR", "Exception: ", NamedTextColor.DARK_RED));
+        }
     }
 
     /**
@@ -69,7 +72,9 @@ public class ConsoleUtil {
      * @param message The warning message to log
      */
     public void sendWarning(String message) {
-        logger.log(Level.WARNING, getFormattedMessage(message, NamedTextColor.GOLD));
+        if (LogLevel.WARNING.getLevel() <= this.logLevel.getLevel()) {
+            console.sendMessage(getFormattedMessage("WARNING", message, NamedTextColor.GOLD));
+        }
     }
 
     /**
@@ -80,7 +85,10 @@ public class ConsoleUtil {
      * @param e The throwable to log
      */
     public void sendWarning(String message, Throwable e) {
-        logger.log(Level.WARNING, getFormattedMessage(message, NamedTextColor.GOLD), e);
+        if (LogLevel.WARNING.getLevel() <= this.logLevel.getLevel()) {
+            console.sendMessage(getFormattedMessage("WARNING", message, NamedTextColor.GOLD));
+            this.sendThrowable(e);
+        }
     }
 
     /**
@@ -89,7 +97,9 @@ public class ConsoleUtil {
      * @param message The informational message to log
      */
     public void sendInfo(String message) {
-        logger.log(Level.INFO, getFormattedMessage(message, NamedTextColor.AQUA));
+        if (LogLevel.INFO.getLevel() <= this.logLevel.getLevel()) {
+            console.sendMessage(getFormattedMessage("INFO", message, NamedTextColor.AQUA));
+        }
     }
 
     /**
@@ -98,7 +108,9 @@ public class ConsoleUtil {
      * @param message The debug message to log
      */
     public void sendDebug(String message) {
-        logger.log(Level.FINER, getFormattedMessage(message, NamedTextColor.LIGHT_PURPLE));
+        if (LogLevel.DEBUG.getLevel() <= this.logLevel.getLevel()) {
+            console.sendMessage(getFormattedMessage("DEBUG", message, NamedTextColor.LIGHT_PURPLE));
+        }
     }
 
     /**
@@ -107,19 +119,21 @@ public class ConsoleUtil {
      * @param message The success message to log
      */
     public void sendSuccess(String message) {
-        logger.log(Level.INFO, getFormattedMessage(message, NamedTextColor.DARK_GREEN));
+        if (LogLevel.INFO.getLevel() <= this.logLevel.getLevel()) {
+            console.sendMessage(getFormattedMessage("SUCCESS", message, NamedTextColor.DARK_GREEN));
+        }
     }
 
     /**
-     * Formats a message with the specified color and prefix.
-     *
+     * Formats a message with the specified color and level tag.
+     * @param levelTag The log level tag to use
      * @param message The message to format
-     * @param color   The color to apply to the message
-     * @return The formatted message
+     * @param color The color to apply to the message
+     * @return
      */
-    private String getFormattedMessage(String message, NamedTextColor color) {
-        String colored = messageUtil.colorMessage(color, message);
-        return messageUtil.formatMessage(colored, true);
+    private Component getFormattedMessage(String levelTag, String message, NamedTextColor color) {
+        String fullMessage = String.format("%s: %s", levelTag, message);
+        return messageUtil.getConsoleComponent(color, fullMessage);
     }
 
     /**
@@ -134,17 +148,19 @@ public class ConsoleUtil {
         String logLevel;
         if (jsonConfig == null) {
             logLevel = plugin.getConfig().getString("log-level");
-            return;
+        } else {
+            final ConfigUtil configUtil = new ConfigUtil(plugin);
+            logLevel = configUtil.getJsonMember("logLevel").getAsString();
         }
-        final ConfigUtil configUtil = new ConfigUtil(plugin);
-        logLevel = configUtil.getJsonMember("logLevel").getAsString();
 
         if (logLevel == null || logLevel.isEmpty()) {
             this.logLevel = LogLevel.INFO;
         } else {
-            this.logLevel = LogLevel.valueOf(logLevel);
+            try {
+                this.logLevel = LogLevel.valueOf(logLevel);
+            } catch (IllegalArgumentException e) {
+                this.logLevel = LogLevel.INFO;
+            }
         }
-
-        this.logger.setLevel(this.logLevel.getLevel());
     }
 }
