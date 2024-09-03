@@ -37,7 +37,7 @@ dependencies {
 
     implementation 'com.google.code.gson:gson:2.11.0'
 
-    implementation 'org.postgresql:postgresql:42.7.3'
+    shadow 'org.postgresql:postgresql:42.7.3'
     implementation 'com.zaxxer:HikariCP:5.1.0'
 
     compileOnly ("com.github.MilkBowl:VaultAPI:1.7.1") {
@@ -91,7 +91,12 @@ sourcesJar {
 }
 
 assemble {
+    dependsOn(tasks.shadowJar)
     dependsOn reobfJar
+}
+
+shadowJar {
+  configurations = [project.configurations.shadow]
 }
 
 publishing {
