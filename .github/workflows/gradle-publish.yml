@@ -21,10 +21,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: "17"
+          java-version: "21"
           distribution: "temurin"
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
           settings-path: ${{ github.workspace }} # location for the settings.xml file
@@ -37,6 +37,7 @@ jobs:
         uses: KillionRevival/gradle-builder-action@v2
         with:
           token: ${{ secrets.PAT }}
+          java-version: "21"
 
       - name: Upload Release Asset
         id: release
@@ -47,3 +48,5 @@ jobs:
       - name: Deploy to package repo
         id: deploy
         uses: KillionRevival/gradle-deploy-action@v1
+        with:
+          java-version: "21"
