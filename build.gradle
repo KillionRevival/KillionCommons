@@ -6,7 +6,7 @@ plugins {
     id "io.freefair.lombok" version "8.10"
 }
 
-group = 'co.killionrevival.killioncommons'
+group = 'co.killionrevival'
 version = '3.0.0-SNAPSHOT'
 
 repositories {
