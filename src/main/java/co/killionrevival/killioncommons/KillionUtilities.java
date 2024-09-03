@@ -3,9 +3,9 @@ package co.killionrevival.killioncommons;
 import co.killionrevival.killioncommons.npc.NpcManager;
 import co.killionrevival.killioncommons.util.BroadcastUtil;
 import co.killionrevival.killioncommons.util.ConfigUtil;
-import co.killionrevival.killioncommons.util.ConsoleUtil;
 import co.killionrevival.killioncommons.util.MessageUtil;
 import co.killionrevival.killioncommons.util.SkinUtil;
+import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 

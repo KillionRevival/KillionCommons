@@ -8,12 +8,13 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-
+import java.sql.SQLException;
 
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.database.models.ReturnCode;
 import co.killionrevival.killioncommons.util.ConfigUtil;
-import co.killionrevival.killioncommons.util.ConsoleUtil;
+import co.killionrevival.killioncommons.util.console.ConsoleUtil;
+
 import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -59,14 +60,26 @@ public abstract class DatabaseConnection {
             credentialFilePath = configUtil.getJsonMember("credentialsFilePath").getAsString();
         }
         this.credentials = this.getCredentials();
-        this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(), credentials.getDatabase());
+        this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(),
+                credentials.getDatabase());
         createConnection();
     }
 
+    /**
+     * Gets the DataSource associated with the current database connection.
+     *
+     * @return HikariDataSource The data source of the database connection.
+     */
     protected HikariDataSource getDataSource() {
         return dataSource;
     }
 
+    /**
+     * Gets a Connection from the HikariDataSource.
+     *
+     * @return Connection The SQL connection object.
+     * @throws SQLException if a database access error occurs or this method is called on a closed connection.
+     */
     protected Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
@@ -79,13 +92,14 @@ public abstract class DatabaseConnection {
     private DatabaseCredentials getCredentials() {
         if (Files.exists(Paths.get(this.credentialFilePath))) {
             final File credFile = new File(this.credentialFilePath);
-            try (FileReader reader = new FileReader(credFile)){
+            try (FileReader reader = new FileReader(credFile)) {
                 return gson.fromJson(reader, DatabaseCredentials.class);
             } catch (IOException e) {
                 logger.sendError(e.getMessage());
             }
         } else {
-            logger.sendError("Credentials file does not exist at " + Paths.get(this.credentialFilePath).toAbsolutePath());
+            logger.sendError(
+                    "Credentials file does not exist at " + Paths.get(this.credentialFilePath).toAbsolutePath());
             System.out.println("file not found");
         }
         return null;

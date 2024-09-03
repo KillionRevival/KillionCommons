@@ -1,10 +1,13 @@
 package co.killionrevival.killioncommons.util;
 
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import co.killionrevival.killioncommons.util.console.ConsoleUtil;
+import co.killionrevival.killioncommons.util.console.models.LogLevel;
+
 import org.bukkit.plugin.Plugin;
 
 import java.io.BufferedReader;
@@ -16,8 +19,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 public class ConfigUtil {
     private final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
 
-    private Logger logger;
+    private ConsoleUtil logger;
     private Class<?> type;
     private File configFile;
     private String configFileName;
@@ -38,8 +39,8 @@ public class ConfigUtil {
         this.plugin = plugin;
         configDirectory = plugin.getDataPath();
         this.configFileName = "config.json";
-        configFile = new File(configDirectory+ "/" + configFileName);
-        logger = plugin.getLogger();
+        configFile = new File(configDirectory + "/" + configFileName);
+        logger = new ConsoleUtil(plugin, LogLevel.INFO);
         type = null;
     }
 
@@ -51,7 +52,7 @@ public class ConfigUtil {
     public ConfigUtil(final String configFileName, final Plugin plugin, Class<?> configClass) {
         this(plugin);
         this.configFileName = configFileName;
-        configFile = new File(configDirectory+ "/" + configFileName);
+        configFile = new File(configDirectory + "/" + configFileName);
         type = configClass;
     }
 
@@ -72,7 +73,7 @@ public class ConfigUtil {
         try (final FileWriter writer = new FileWriter(configFile)) {
             writer.write(gson.toJson(object));
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not write config to file", e);
+            logger.sendError("Could not write config to file", e);
         }
     }
 
@@ -88,16 +89,21 @@ public class ConfigUtil {
         createConfigDirectoriesAndFile();
         final InputStream defaultConfig = plugin.getResource(configFileName);
         if (defaultConfig == null) {
-            logger.severe("Default for file " + configFileName + " does not exist.");
+            logger.sendError("Default for file " + configFileName + " does not exist.");
             return;
         }
-        final String text = new BufferedReader(new InputStreamReader(defaultConfig, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining("\n"));
+        BufferedReader defaultConfigReader = new BufferedReader(
+                new InputStreamReader(defaultConfig, StandardCharsets.UTF_8));
+        final String text = defaultConfigReader.lines().collect(Collectors.joining("\n"));
+        try {
+            defaultConfigReader.close();
+        } catch (IOException e) {
+            logger.sendError("Could not copy default config to config file:", e);
+        }
         try {
             Files.write(configFile.toPath(), text.getBytes());
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not copy default config to config file:", e);
+            logger.sendError("Could not copy default config to config file:", e);
         }
     }
 
@@ -121,7 +127,7 @@ public class ConfigUtil {
             Files.createDirectories(configFile.toPath().getParent());
             Files.createFile(configFile.toPath());
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not create config file directory and file", e);
+            logger.sendError("Could not create config file directory and file", e);
         }
     }
 
@@ -129,7 +135,7 @@ public class ConfigUtil {
         try {
             return Files.readString(configFile.toPath());
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Could not get config json string, returning null", e);
+            logger.sendError("Could not get config json string, returning null", e);
         }
 
         return null;

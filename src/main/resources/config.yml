@@ -1,6 +1,5 @@
 plugin-prefix: '&4[Killion] &r'
+log-level: "INFO"
 
 disable-strength-2: true
 enable-strength-2-on-beacons: true
-
-debug-mode: false

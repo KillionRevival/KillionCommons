@@ -3,8 +3,9 @@ package co.killionrevival.killioncommons.npc;
 import co.killionrevival.killioncommons.KillionCommons;
 import co.killionrevival.killioncommons.npc.events.KillionNpcSpawnEvent;
 import co.killionrevival.killioncommons.pojos.SkinData;
-import co.killionrevival.killioncommons.util.ConsoleUtil;
 import co.killionrevival.killioncommons.util.SkinUtil;
+import co.killionrevival.killioncommons.util.console.ConsoleUtil;
+
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
@@ -43,8 +44,7 @@ public class NpcManager {
 
     public void spawn(
             final IKillionNpc npcToSpawn,
-            final Location locationToSpawnAt
-    ) {
+            final Location locationToSpawnAt) {
         final CraftWorld world = (CraftWorld) locationToSpawnAt.getWorld();
         final KillionNpcNms npc = getKillionNpcNms(npcToSpawn, locationToSpawnAt, world);
         final ServerEntity npcEntity = new ServerEntity(
@@ -52,9 +52,9 @@ public class NpcManager {
                 npc,
                 0,
                 false,
-                (packet) -> {},
-                new HashSet<>()
-        );
+                (packet) -> {
+                },
+                new HashSet<>());
 
         final ArrayList<Player> playersInRender = new ArrayList<>(world.getNearbyPlayers(locationToSpawnAt, 128));
         final KillionNpcSpawnEvent event = new KillionNpcSpawnEvent(npcToSpawn, locationToSpawnAt, playersInRender);
@@ -66,12 +66,13 @@ public class NpcManager {
         npcs.put(npc.getId(), npc);
         npcIdToUuid.put(npc.getId(), npc.getUUID());
         playersInRender.stream()
-                       .map(player -> (CraftPlayer) player)
-                       .forEach(player -> {
-                           final ServerGamePacketListenerImpl ps = player.getHandle().connection;
-                           ps.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, npc));
-                           ps.send(npc.getAddEntityPacket(npcEntity));
-                       });
+                .map(player -> (CraftPlayer) player)
+                .forEach(player -> {
+                    final ServerGamePacketListenerImpl ps = player.getHandle().connection;
+                    ps.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER,
+                            npc));
+                    ps.send(npc.getAddEntityPacket(npcEntity));
+                });
     }
 
     public IKillionNpc getNpcFromCache(final int entityId) {
@@ -85,8 +86,7 @@ public class NpcManager {
     private KillionNpcNms getKillionNpcNms(
             IKillionNpc npcToSpawn,
             Location locationToSpawnAt,
-            CraftWorld world
-    ) {
+            CraftWorld world) {
         final ServerLevel level = world.getHandle().getLevel();
         final MinecraftServer server = level.getServer();
         final PlayerProfile npcProfile = npcToSpawn.getPlayerRepresentation();
@@ -101,8 +101,7 @@ public class NpcManager {
                 level,
                 profile,
                 ClientInformation.createDefault(),
-                npcToSpawn
-        );
+                npcToSpawn);
 
         npc.setPos(locationToSpawnAt.getX(), locationToSpawnAt.getY(), locationToSpawnAt.getZ());
         return npc;
