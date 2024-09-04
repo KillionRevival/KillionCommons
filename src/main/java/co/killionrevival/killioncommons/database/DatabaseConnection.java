@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.sql.DriverManager;
 
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.database.models.ReturnCode;
@@ -18,8 +19,7 @@ import co.killionrevival.killioncommons.util.ConfigUtil;
 import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 
 import com.google.gson.Gson;
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
+
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -36,7 +36,7 @@ public abstract class DatabaseConnection {
     private final Gson gson;
 
     protected ConsoleUtil logger;
-    private HikariDataSource dataSource;
+    private Connection connection;
 
     /**
      * @param logger Instance of the ConsoleUtil
@@ -48,7 +48,7 @@ public abstract class DatabaseConnection {
         this.credentials = this.getCredentials();
         this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(),
                 credentials.getDatabase());
-        createConnection();
+        this.connection = createConnection();
     }
 
     /**
@@ -66,26 +66,25 @@ public abstract class DatabaseConnection {
         this.credentials = this.getCredentials();
         this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(),
                 credentials.getDatabase());
-        createConnection();
+        this.connection = createConnection();
     }
 
-    /**
-     * Gets the DataSource associated with the current database connection.
-     *
-     * @return HikariDataSource The data source of the database connection.
-     */
-    protected HikariDataSource getDataSource() {
-        return dataSource;
-    }
+    // /**
+    //  * Gets the DataSource associated with the current database connection.
+    //  *
+    //  * @return HikariDataSource The data source of the database connection.
+    //  */
+    // protected HikariDataSource getDataSource() {
+    //     return dataSource;
+    // }
 
     /**
      * Gets a Connection from the HikariDataSource.
      *
      * @return Connection The SQL connection object.
-     * @throws SQLException if a database access error occurs or this method is called on a closed connection.
      */
-    protected Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+    protected Connection getConnection() {
+        return this.connection;
     }
 
     /**
@@ -110,32 +109,35 @@ public abstract class DatabaseConnection {
 
     /**
      * Creates a connection to the database
-     *
+     * 
      * @return Connection - Connection to the database
      */
-    private void createConnection() {
-        try {
-            Class.forName("org.postgresql.Driver");
-            final HikariConfig config = new HikariConfig();
-            config.setJdbcUrl(this.url);
-            config.setUsername(credentials.getUsername());
-            config.setPassword(credentials.getPassword());
-            config.setConnectionTestQuery("Select 1");
-            config.setMaximumPoolSize(10);
-            config.setConnectionTimeout(30000);
-            dataSource = new HikariDataSource(config);
-            logger.sendInfo("Connected to Database!");
-        } catch (Exception e) {
-            logger.sendThrowable(e);
+    private Connection createConnection() {
+        if (connection == null) {
+            try {
+                Class.forName("org.postgresql.Driver");
+                connection = DriverManager.getConnection(this.url, this.credentials.getUsername(),
+                        this.credentials.getPassword());
+                logger.sendInfo("Connected to Database!");
+            } catch (SQLException e) {
+                logger.sendError("ERROR: " + e.getMessage());
+                throw new RuntimeException("Error connecting to the database", e);
+            } catch (ClassNotFoundException e) {
+                logger.sendError("ERROR: " + e.getMessage());
+                throw new RuntimeException("Failed to find postgres driver", e);
+            } catch (Exception e) {
+                logger.sendError("ERROR: " + e.getMessage());
+            }
         }
+        return connection;
     }
 
     /**
      * Closes the connection to the database
      */
     public void closeConnection() throws Exception {
-        if (this.dataSource != null) {
-            dataSource.close();
+        if (this.connection != null) {
+            connection.close();
             logger.sendInfo("Database Connection closed");
         }
     }
