@@ -60,6 +60,8 @@ public abstract class DatabaseConnection {
         if (plugin.getResource("config.json") != null) {
             final ConfigUtil configUtil = new ConfigUtil(plugin);
             credentialFilePath = configUtil.getJsonMember("credentialsFilePath").getAsString();
+        } else {
+            credentialFilePath = "/home/container/plugins/PostgresCredentials/credentials.json";
         }
         this.credentials = this.getCredentials();
         this.url = String.format("jdbc:postgresql://%s:%d/%s", credentials.getIp(), credentials.getPort(),
@@ -102,7 +104,6 @@ public abstract class DatabaseConnection {
         } else {
             logger.sendError(
                     "Credentials file does not exist at " + Paths.get(this.credentialFilePath).toAbsolutePath());
-            System.out.println("file not found");
         }
         return null;
     }
@@ -120,6 +121,8 @@ public abstract class DatabaseConnection {
             config.setUsername(credentials.getUsername());
             config.setPassword(credentials.getPassword());
             config.setConnectionTestQuery("Select 1");
+            config.setMaximumPoolSize(10);
+            config.setConnectionTimeout(30000);
             dataSource = new HikariDataSource(config);
             logger.sendInfo("Connected to Database!");
         } catch (Exception e) {
@@ -148,7 +151,7 @@ public abstract class DatabaseConnection {
         try (final PreparedStatement stmt = getConnection().prepareStatement(query)) {
             stmt.execute();
         } catch (SQLException e) {
-            logger.sendError(e.getMessage());
+            logger.sendThrowable(e);
             throw new Exception("executeQuery failed!");
         }
     }
@@ -162,6 +165,7 @@ public abstract class DatabaseConnection {
      * @throws Exception
      */
     protected void executeUpdate(String query, Object... params) throws Exception {
+        getConnection().setAutoCommit(false);
         try (final PreparedStatement p = getConnection().prepareStatement(query)) {
             if (params != null && params.length > 0) {
                 for (int i = 0; i < params.length; i++) {
@@ -169,8 +173,10 @@ public abstract class DatabaseConnection {
                 }
             }
             p.executeUpdate();
+            getConnection().commit();
         } catch (SQLException e) {
-            logger.sendError(e.getMessage());
+            logger.sendThrowable(e);
+            getConnection().rollback();
             throw new Exception("executeUpdate failed!");
         }
     }
@@ -182,16 +188,20 @@ public abstract class DatabaseConnection {
      * @throws Exception
      */
     protected ResultSet insertAndReturnKey(String query, Object... params) throws Exception {
-        try (final PreparedStatement p = getConnection().prepareStatement(query)) {
+        getConnection().setAutoCommit(false);
+        try {
+            final PreparedStatement p = getConnection().prepareStatement(query);
             if (params != null && params.length > 0) {
                 for (int i = 0; i < params.length; i++) {
                     p.setObject(i + 1, params[i]);
                 }
             }
             p.executeQuery();
+            getConnection().commit();
             return p.getGeneratedKeys();
         } catch (SQLException e) {
-            logger.sendError(e.getMessage());
+            logger.sendThrowable(e);
+            getConnection().rollback();
             throw new Exception("executeUpdate failed!");
         }
     }
@@ -206,13 +216,14 @@ public abstract class DatabaseConnection {
      * @throws Exception
      */
     protected ResultSet fetchQuery(String query, Object... params) throws Exception {
-        try (final PreparedStatement p = getConnection().prepareStatement(query)) {
+        try {
+            final PreparedStatement p = getConnection().prepareStatement(query);
             for (int i = 0; i < params.length; i++) {
                 p.setObject(i + 1, params[i]);
             }
             return p.executeQuery();
         } catch (SQLException e) {
-            logger.sendError(e.getMessage());
+            logger.sendThrowable(e);
             throw new Exception("fetchQuery failed!");
         }
     }
@@ -230,8 +241,7 @@ public abstract class DatabaseConnection {
             this.executeQuery(query);
             return ReturnCode.SUCCESS;
         } catch (Exception e) {
-            logger.sendError(e.getMessage());
-            logger.sendError("Failed to create schema: " + schemaName);
+            logger.sendError("Failed to create schema: " + schemaName, e);
         }
         return ReturnCode.FAILURE;
     }
@@ -253,9 +263,26 @@ public abstract class DatabaseConnection {
             this.executeQuery(query);
             return ReturnCode.SUCCESS;
         } catch (Exception e) {
-            logger.sendError(e.getMessage());
-            logger.sendError("Failed to create enum: " + name);
+            logger.sendError("Failed to create enum: " + name, e);
         }
         return ReturnCode.FAILURE;
+    }
+
+    /**
+     * Closes a result set if it is not null.
+     * 
+     * @param resultSet The result set to close
+     */
+    protected void closeResultSet(ResultSet resultSet) {
+        if (resultSet == null) {
+            logger.sendWarning("Result set is null, cannot close.");
+            return;
+        }
+
+        try {
+            resultSet.close();
+        } catch (SQLException e) {
+            logger.sendError("Failed to close result set", e);
+        }
     }
 }

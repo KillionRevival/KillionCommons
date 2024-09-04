@@ -11,6 +11,8 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class ConsoleUtil {
     private LogLevel logLevel;
@@ -63,6 +65,11 @@ public class ConsoleUtil {
     public void sendThrowable(Throwable t) {
         if (LogLevel.ERROR.getLevel() <= this.logLevel.getLevel()) {
             console.sendMessage(getFormattedMessage("EXCEPTION", t.getMessage(), NamedTextColor.DARK_RED));
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            t.printStackTrace(pw);
+            console.sendMessage(
+                    getFormattedMessage("EXCEPTION", "Stack trace:\n" + sw.toString(), NamedTextColor.DARK_RED));
         }
     }
 
