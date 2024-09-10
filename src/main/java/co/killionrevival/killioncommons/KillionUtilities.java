@@ -1,6 +1,5 @@
 package co.killionrevival.killioncommons;
 
-import co.killionrevival.killioncommons.npc.NpcManager;
 import co.killionrevival.killioncommons.util.BroadcastUtil;
 import co.killionrevival.killioncommons.util.ConfigUtil;
 import co.killionrevival.killioncommons.util.MessageUtil;

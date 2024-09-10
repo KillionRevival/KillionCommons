@@ -5,8 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import co.killionrevival.killioncommons.util.console.ConsoleUtil;
-import co.killionrevival.killioncommons.util.console.models.LogLevel;
+import co.killionrevival.killioncommons.KillionCommons;
 
 import org.bukkit.plugin.Plugin;
 
@@ -20,6 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class exists to help read json configuration for your plugin
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 public class ConfigUtil {
     private final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
 
-    private ConsoleUtil logger;
+    private Logger logger;
     private Class<?> type;
     private File configFile;
     private String configFileName;
@@ -40,7 +41,7 @@ public class ConfigUtil {
         configDirectory = plugin.getDataPath();
         this.configFileName = "config.json";
         configFile = new File(configDirectory + "/" + configFileName);
-        logger = new ConsoleUtil(plugin, LogLevel.INFO);
+        logger = KillionCommons.getInstance().getLogger();
         type = null;
     }
 
@@ -73,7 +74,7 @@ public class ConfigUtil {
         try (final FileWriter writer = new FileWriter(configFile)) {
             writer.write(gson.toJson(object));
         } catch (IOException e) {
-            logger.sendError("Could not write config to file", e);
+            logger.log(Level.SEVERE, "Could not write config to file", e);
         }
     }
 
@@ -89,7 +90,7 @@ public class ConfigUtil {
         createConfigDirectoriesAndFile();
         final InputStream defaultConfig = plugin.getResource(configFileName);
         if (defaultConfig == null) {
-            logger.sendError("Default for file " + configFileName + " does not exist.");
+            logger.log(Level.SEVERE, "Default for file " + configFileName + " does not exist.");
             return;
         }
         BufferedReader defaultConfigReader = new BufferedReader(
@@ -98,12 +99,12 @@ public class ConfigUtil {
         try {
             defaultConfigReader.close();
         } catch (IOException e) {
-            logger.sendError("Could not copy default config to config file:", e);
+            logger.log(Level.SEVERE, "Could not copy default config to config file:", e);
         }
         try {
             Files.write(configFile.toPath(), text.getBytes());
         } catch (IOException e) {
-            logger.sendError("Could not copy default config to config file:", e);
+            logger.log(Level.SEVERE, "Could not copy default config to config file:", e);
         }
     }
 
@@ -127,7 +128,7 @@ public class ConfigUtil {
             Files.createDirectories(configFile.toPath().getParent());
             Files.createFile(configFile.toPath());
         } catch (IOException e) {
-            logger.sendError("Could not create config file directory and file", e);
+            logger.log(Level.SEVERE, "Could not create config file directory and file", e);
         }
     }
 
@@ -135,7 +136,7 @@ public class ConfigUtil {
         try {
             return Files.readString(configFile.toPath());
         } catch (Exception e) {
-            logger.sendError("Could not get config json string, returning null", e);
+            logger.log(Level.SEVERE, "Could not get config json string, returning null", e);
         }
 
         return null;
