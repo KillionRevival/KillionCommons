@@ -6,6 +6,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import co.killionrevival.killioncommons.KillionCommons;
+import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 
 import org.bukkit.plugin.Plugin;
 
@@ -19,8 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Collectors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class exists to help read json configuration for your plugin
@@ -29,7 +28,7 @@ import java.util.logging.Logger;
 public class ConfigUtil {
     private final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
 
-    private Logger logger;
+    private ConsoleUtil logger;
     private Class<?> type;
     private File configFile;
     private String configFileName;
@@ -41,7 +40,7 @@ public class ConfigUtil {
         configDirectory = plugin.getDataPath();
         this.configFileName = "config.json";
         configFile = new File(configDirectory + "/" + configFileName);
-        logger = KillionCommons.getInstance().getLogger();
+        logger = KillionCommons.getUtil().getConsoleUtil();
         type = null;
     }
 
@@ -74,7 +73,7 @@ public class ConfigUtil {
         try (final FileWriter writer = new FileWriter(configFile)) {
             writer.write(gson.toJson(object));
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not write config to file", e);
+            logger.sendError("Could not write config to file", e);
         }
     }
 
@@ -90,7 +89,7 @@ public class ConfigUtil {
         createConfigDirectoriesAndFile();
         final InputStream defaultConfig = plugin.getResource(configFileName);
         if (defaultConfig == null) {
-            logger.log(Level.SEVERE, "Default for file " + configFileName + " does not exist.");
+            logger.sendError("Default for file " + configFileName + " does not exist.");
             return;
         }
         BufferedReader defaultConfigReader = new BufferedReader(
@@ -99,12 +98,12 @@ public class ConfigUtil {
         try {
             defaultConfigReader.close();
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not copy default config to config file:", e);
+            logger.sendError("Could not copy default config to config file:", e);
         }
         try {
             Files.write(configFile.toPath(), text.getBytes());
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not copy default config to config file:", e);
+            logger.sendError("Could not copy default config to config file:", e);
         }
     }
 
@@ -128,7 +127,7 @@ public class ConfigUtil {
             Files.createDirectories(configFile.toPath().getParent());
             Files.createFile(configFile.toPath());
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Could not create config file directory and file", e);
+            logger.sendError("Could not create config file directory and file", e);
         }
     }
 
@@ -136,7 +135,7 @@ public class ConfigUtil {
         try {
             return Files.readString(configFile.toPath());
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Could not get config json string, returning null", e);
+            logger.sendError("Could not get config json string, returning null", e);
         }
 
         return null;

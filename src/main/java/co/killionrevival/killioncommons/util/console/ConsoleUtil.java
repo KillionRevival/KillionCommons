@@ -3,33 +3,32 @@ package co.killionrevival.killioncommons.util.console;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
-import co.killionrevival.killioncommons.util.ConfigUtil;
-import co.killionrevival.killioncommons.util.MessageUtil;
+import co.killionrevival.killioncommons.util.TextFormatUtil;
 import co.killionrevival.killioncommons.util.console.models.LogLevel;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class ConsoleUtil {
     private LogLevel logLevel;
-    private final MessageUtil messageUtil;
+    private String prefix;
     private static final Audience console = Bukkit.getConsoleSender();
 
     /**
      * @param plugin The plugin instance
      */
     public ConsoleUtil(Plugin plugin) {
-        this.messageUtil = new MessageUtil(plugin);
-
         getLogLevel(plugin);
+        getPrefix(plugin);
     }
 
     public ConsoleUtil(Plugin plugin, LogLevel logLevel) {
-        this.messageUtil = new MessageUtil(plugin);
+        this(plugin);
+        this.logLevel = logLevel;
     }
 
     /**
@@ -140,25 +139,15 @@ public class ConsoleUtil {
      */
     private Component getFormattedMessage(String levelTag, String message, NamedTextColor color) {
         String fullMessage = String.format("%s: %s", levelTag, message);
-        return messageUtil.getConsoleComponent(color, fullMessage);
+        return (Component) this.getConsoleComponent(color, fullMessage);
     }
 
     /**
      * Retrieves and sets the log level for the plugin from the configuration file.
-     * It first checks for a JSON configuration file. If not found, it falls back
-     * to the standard plugin configuration.
-     *
-     * @param plugin The plugin instance
+     * @param plugin
      */
     private void getLogLevel(Plugin plugin) {
-        final InputStream jsonConfig = plugin.getResource("config.json");
-        String logLevel;
-        if (jsonConfig == null) {
-            logLevel = plugin.getConfig().getString("log-level");
-        } else {
-            final ConfigUtil configUtil = new ConfigUtil(plugin);
-            logLevel = configUtil.getJsonMember("logLevel").getAsString();
-        }
+        String logLevel = plugin.getConfig().getString("log-level");
 
         if (logLevel == null || logLevel.isEmpty()) {
             this.logLevel = LogLevel.INFO;
@@ -169,5 +158,30 @@ public class ConsoleUtil {
                 this.logLevel = LogLevel.INFO;
             }
         }
+    }
+
+    /**
+     * Retrieves and sets the prefix for the plugin from the configuration file.
+     * @param plugin
+     */
+    private void getPrefix(Plugin plugin) {
+        String prefix = plugin.getConfig().getString("plugin-prefix");
+
+        if (prefix == null || prefix.isEmpty()) {
+            this.prefix = "";
+        } else {
+            this.prefix = prefix;
+        }
+    }
+
+    /**
+    * Formats a message with the specified color and prefix.
+    * @param color The color to apply to the message
+    * @param message The message to format
+    * @return The formatted message as a TextComponent
+    */
+    private TextComponent getConsoleComponent(NamedTextColor color, String message) {
+        return Component.text().append(TextFormatUtil.getComponentFromLegacyString(prefix))
+                .append(Component.text().content(message).color(color)).build();
     }
 }

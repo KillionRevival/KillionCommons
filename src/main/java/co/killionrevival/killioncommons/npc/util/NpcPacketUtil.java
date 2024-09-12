@@ -1,12 +1,7 @@
 package co.killionrevival.killioncommons.npc.util;
 
-import co.killionrevival.killioncommons.KillionCommons;
 import co.killionrevival.killioncommons.npc.KillionNpcNms;
-import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundHurtAnimationPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket;
-import net.minecraft.network.protocol.game.ClientboundSetEntityMotionPacket;
-import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Location;
 import org.bukkit.craftbukkit.CraftWorld;
@@ -17,18 +12,16 @@ import java.util.ArrayList;
 
 public class NpcPacketUtil {
     public static void displayNpcHitToPlayers(
-            final KillionNpcNms npc
-    ) {
+            final KillionNpcNms npc) {
         final CraftWorld world = npc.level().getWorld();
         final Location playerLocation = npc.getBukkitEntity().getLocation();
         final ArrayList<Player> playersInRender = new ArrayList<>(
-                world.getNearbyPlayers(playerLocation, 128)
-        );
+                world.getNearbyPlayers(playerLocation, 128));
         playersInRender.stream()
-                       .map( player -> (CraftPlayer) player)
-                       .forEach(player -> {
-                           final ServerGamePacketListenerImpl ps = player.getHandle().connection;
-                           ps.send(new ClientboundHurtAnimationPacket(npc));
-                       });
+                .map(player -> (CraftPlayer) player)
+                .forEach(player -> {
+                    final ServerGamePacketListenerImpl ps = player.getHandle().connection;
+                    ps.send(new ClientboundHurtAnimationPacket(npc));
+                });
     }
 }

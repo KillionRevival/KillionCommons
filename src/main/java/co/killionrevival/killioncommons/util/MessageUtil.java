@@ -4,10 +4,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
-
 import java.io.InputStream;
 
 public class MessageUtil {
@@ -71,16 +67,5 @@ public class MessageUtil {
         } else {
             return ChatColor.translateAlternateColorCodes('&', message);
         }
-    }
-
-    /**
-     * Formats a message with the specified color and prefix.
-     * @param color The color to apply to the message
-     * @param message The message to format
-     * @return The formatted message as a TextComponent
-     */
-    public TextComponent getConsoleComponent(NamedTextColor color, String message) {
-        return Component.text().append(TextFormatUtil.getComponentFromLegacyString(prefix))
-                .append(Component.text().content(message).color(color)).build();
     }
 }
