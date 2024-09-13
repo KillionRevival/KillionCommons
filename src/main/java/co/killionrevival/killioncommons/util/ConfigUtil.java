@@ -40,7 +40,7 @@ public class ConfigUtil {
         configDirectory = plugin.getDataPath();
         this.configFileName = "config.json";
         configFile = new File(configDirectory + "/" + configFileName);
-        logger = KillionCommons.getUtil().getConsoleUtil();
+        logger = new ConsoleUtil(plugin);
         type = null;
     }
 
