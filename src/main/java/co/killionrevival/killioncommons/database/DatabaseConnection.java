@@ -165,7 +165,8 @@ public abstract class DatabaseConnection {
      * @throws Exception
      */
     protected void executeUpdate(String query, Object... params) throws Exception {
-        getConnection().setAutoCommit(false);
+        final Connection connection = getConnection();
+        connection.setAutoCommit(false);
         try (final PreparedStatement p = getConnection().prepareStatement(query)) {
             if (params != null && params.length > 0) {
                 for (int i = 0; i < params.length; i++) {
@@ -173,22 +174,23 @@ public abstract class DatabaseConnection {
                 }
             }
             p.executeUpdate();
-            getConnection().commit();
+            connection.commit();
         } catch (SQLException e) {
             logger.sendThrowable(e);
-            getConnection().rollback();
+            connection.rollback();
             throw new Exception("executeUpdate failed!");
         }
     }
 
     /**
-     * Execute an insert that expects parameters and returns a generated key*
+     * Execute an insert that expects parameters and returns a generated key
      * @param query  The insert statement to run
      * @param params A list of params, '?' will be replaced with the parameters
      * @throws Exception
      */
     protected ResultSet insertAndReturnKey(String query, Object... params) throws Exception {
-        getConnection().setAutoCommit(false);
+        final Connection connection = getConnection();
+        connection.setAutoCommit(false);
         try {
             final PreparedStatement p = getConnection().prepareStatement(query);
             if (params != null && params.length > 0) {
@@ -197,11 +199,11 @@ public abstract class DatabaseConnection {
                 }
             }
             p.executeQuery();
-            getConnection().commit();
-            return p.getGeneratedKeys();
+            connection.commit();
+            return p.getResultSet();
         } catch (SQLException e) {
             logger.sendThrowable(e);
-            getConnection().rollback();
+            connection.rollback();
             throw new Exception("executeUpdate failed!");
         }
     }
