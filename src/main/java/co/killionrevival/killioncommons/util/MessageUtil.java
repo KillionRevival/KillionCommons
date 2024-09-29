@@ -1,5 +1,7 @@
 package co.killionrevival.killioncommons.util;
 
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -34,6 +36,17 @@ public class MessageUtil {
     }
 
     /**
+     * Sends a message to an audience after formatting it.
+     *
+     * @param audience The audience to send the message to
+     * @param message The message to send
+     */
+    public void sendMessage(Audience audience, String message) {
+        String formattedMessage = formatMessage(message, false);
+        audience.sendMessage(LegacyComponentSerializer.legacySection().deserialize(formattedMessage));
+    }
+
+    /**
      * Sends a message with a prefix to a player after formatting it.
      *
      * @param player  The player to send the message to
@@ -42,6 +55,17 @@ public class MessageUtil {
     public void sendPrefixMessage(Player player, String message) {
         String formattedMessage = formatMessage(message, true);
         player.sendMessage(formattedMessage);
+    }
+
+    /**
+     * Sends a message with a prefix to an audience after formatting it.
+     *
+     * @param audience The audience to send the message to
+     * @param message The message to send
+     */
+    public void sendPrefixMessage(Audience audience, String message) {
+        String formattedMessage = formatMessage(message, true);
+        audience.sendMessage(LegacyComponentSerializer.legacySection().deserialize(formattedMessage));
     }
 
     /**
