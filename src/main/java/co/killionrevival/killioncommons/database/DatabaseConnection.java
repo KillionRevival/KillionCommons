@@ -6,20 +6,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
-import co.killionrevival.killioncommons.database.models.ReturnCode;
 import co.killionrevival.killioncommons.util.ConfigUtil;
 import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 
 import com.google.gson.Gson;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -35,7 +31,8 @@ public abstract class DatabaseConnection {
 
     private final Gson gson;
 
-    protected ConsoleUtil logger;
+    @Getter
+    private final ConsoleUtil logger;
     private HikariDataSource dataSource;
 
     /**
@@ -137,154 +134,6 @@ public abstract class DatabaseConnection {
         if (this.dataSource != null) {
             dataSource.close();
             logger.sendInfo("Database Connection closed");
-        }
-    }
-
-    /**
-     * Execute a query that doesn't expect any parameters
-     * i.e. creating tables, schemas, etc
-     *
-     * @param query The query to run
-     * @throws Exception
-     */
-    protected void executeQuery(String query) throws Exception {
-        try (final PreparedStatement stmt = getConnection().prepareStatement(query)) {
-            stmt.execute();
-        } catch (SQLException e) {
-            logger.sendThrowable(e);
-            throw new Exception("executeQuery failed!");
-        }
-    }
-
-    /**
-     * Execute a query that expects parameters but does not return data
-     * i.e. INSERT, UPDATE, DELETE
-     *
-     * @param query  The query to run
-     * @param params A list of params, '?' will be replaced with the parameters
-     * @throws Exception
-     */
-    protected void executeUpdate(String query, Object... params) throws Exception {
-        final Connection connection = getConnection();
-        connection.setAutoCommit(false);
-        try (final PreparedStatement p = getConnection().prepareStatement(query)) {
-            if (params != null && params.length > 0) {
-                for (int i = 0; i < params.length; i++) {
-                    p.setObject(i + 1, params[i]);
-                }
-            }
-            p.executeUpdate();
-            connection.commit();
-        } catch (SQLException e) {
-            logger.sendThrowable(e);
-            connection.rollback();
-            throw new Exception("executeUpdate failed!");
-        }
-    }
-
-    /**
-     * Execute an insert that expects parameters and returns a generated key
-     * @param query  The insert statement to run
-     * @param params A list of params, '?' will be replaced with the parameters
-     * @throws Exception
-     */
-    protected ResultSet insertAndReturnKey(String query, Object... params) throws Exception {
-        final Connection connection = getConnection();
-        connection.setAutoCommit(false);
-        try {
-            final PreparedStatement p = getConnection().prepareStatement(query);
-            if (params != null && params.length > 0) {
-                for (int i = 0; i < params.length; i++) {
-                    p.setObject(i + 1, params[i]);
-                }
-            }
-            p.executeQuery();
-            connection.commit();
-            return p.getResultSet();
-        } catch (SQLException e) {
-            logger.sendThrowable(e);
-            connection.rollback();
-            throw new Exception("executeUpdate failed!");
-        }
-    }
-
-    /**
-     * Execute a query that expects parameters and returns data
-     * i.e. SELECT
-     *
-     * @param query  The query to run
-     * @param params A list of params, '?' will be replaced with the parameters
-     * @return ResultSet - The results of the query
-     * @throws Exception
-     */
-    protected ResultSet fetchQuery(String query, Object... params) throws Exception {
-        try {
-            final PreparedStatement p = getConnection().prepareStatement(query);
-            for (int i = 0; i < params.length; i++) {
-                p.setObject(i + 1, params[i]);
-            }
-            return p.executeQuery();
-        } catch (SQLException e) {
-            logger.sendThrowable(e);
-            throw new Exception("fetchQuery failed!");
-        }
-    }
-
-    /**
-     * Creates a schema if it does not already exist
-     *
-     * @param schemaName The name of the schema to create
-     * @return ReturnCode - The status code of the result of the query
-     */
-    protected ReturnCode createSchemaIfNotExists(String schemaName) {
-        String query = "CREATE SCHEMA IF NOT EXISTS " + schemaName;
-        logger.sendDebug("Create schema query: " + query);
-        try {
-            this.executeQuery(query);
-            return ReturnCode.SUCCESS;
-        } catch (Exception e) {
-            logger.sendError("Failed to create schema: " + schemaName, e);
-        }
-        return ReturnCode.FAILURE;
-    }
-
-    /**
-     * Creates an enum if it does not already exist
-     *
-     * @param schemaName The name of the schema to add the enum to
-     * @param name       The name of the enum to crate
-     * @param fields     An array of strings that are the contents of the enum
-     * @return ReturnCode - The status code of the result of the query
-     */
-    protected ReturnCode createEnumIfNotExists(String schemaName, String name, String[] fields) {
-        String fieldStr = Arrays.stream(fields).map(field -> "'" + field + "'").collect(Collectors.joining(","));
-        String query = "DO $$ BEGIN CREATE TYPE " + schemaName + "." + name + " AS ENUM (" + fieldStr
-                + "); EXCEPTION WHEN duplicate_object THEN NULL; END $$;";
-        logger.sendDebug("Create enum query: " + query);
-        try {
-            this.executeQuery(query);
-            return ReturnCode.SUCCESS;
-        } catch (Exception e) {
-            logger.sendError("Failed to create enum: " + name, e);
-        }
-        return ReturnCode.FAILURE;
-    }
-
-    /**
-     * Closes a result set if it is not null.
-     * 
-     * @param resultSet The result set to close
-     */
-    protected void closeResultSet(ResultSet resultSet) {
-        if (resultSet == null) {
-            logger.sendWarning("Result set is null, cannot close.");
-            return;
-        }
-
-        try {
-            resultSet.close();
-        } catch (SQLException e) {
-            logger.sendError("Failed to close result set", e);
         }
     }
 }
