@@ -1,5 +1,6 @@
 package co.killionrevival.killioncommons.util.console;
 
+import co.killionrevival.killioncommons.util.ConfigUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -147,7 +148,14 @@ public class ConsoleUtil {
      * @param plugin
      */
     private void getLogLevel(Plugin plugin) {
-        String logLevel = plugin.getConfig().getString("log-level");
+        String logLevel;
+        if (plugin.getResource("config.json") != null) {
+            final ConfigUtil configUtil = new ConfigUtil(plugin);
+            logLevel = configUtil.getJsonMember("log-level").getAsString();
+        }
+        else {
+            logLevel = plugin.getConfig().getString("log-level");
+        }
 
         if (logLevel == null || logLevel.isEmpty()) {
             this.logLevel = LogLevel.INFO;
@@ -165,7 +173,14 @@ public class ConsoleUtil {
      * @param plugin
      */
     private void getPrefix(Plugin plugin) {
-        String prefix = plugin.getConfig().getString("plugin-prefix");
+        String prefix;
+        if (plugin.getResource("config.json") != null) {
+            final ConfigUtil configUtil = new ConfigUtil(plugin);
+            prefix = configUtil.getJsonMember("plugin-prefix").getAsString();
+        }
+        else {
+            prefix = plugin.getConfig().getString("plugin-prefix");
+        }
 
         if (prefix == null || prefix.isEmpty()) {
             this.prefix = "";
