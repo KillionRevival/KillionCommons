@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public abstract class DataAccessObject<T> {
@@ -74,6 +74,33 @@ public abstract class DataAccessObject<T> {
                 throw new Exception("executeUpdate failed!");
             }
         } catch (SQLException e) {
+            logger.sendThrowable(e);
+            throw new Exception("Connecting to database failed!");
+        }
+    }
+
+    /**
+     * Execute a batch update against the given query, supply this function with a mapper that should provide
+     * the prepared statement with all of the parameters and call addBatch.
+     * @param query Query to execute
+     * @param mapper Function to prepare the statement
+     * @throws Exception
+     */
+    protected void executeBatchUpdate(String query, Consumer<PreparedStatement> mapper) throws Exception {
+        try(final Connection connection = db.getConnection()) {
+            connection.setAutoCommit(false);
+            try(final PreparedStatement statement = connection.prepareStatement(query)) {
+                mapper.accept(statement);
+                statement.executeBatch();
+                connection.commit();
+            }
+            catch (SQLException e) {
+                connection.rollback();
+                logger.sendThrowable(e);
+                throw new Exception("executeBatchUpdate failed!");
+            }
+        }
+        catch (SQLException e) {
             logger.sendThrowable(e);
             throw new Exception("Connecting to database failed!");
         }

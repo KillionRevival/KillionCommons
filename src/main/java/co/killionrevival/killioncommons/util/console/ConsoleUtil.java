@@ -1,6 +1,8 @@
 package co.killionrevival.killioncommons.util.console;
 
 import co.killionrevival.killioncommons.util.ConfigUtil;
+import co.killionrevival.killioncommons.util.IOUtil;
+import com.google.gson.JsonElement;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -148,12 +150,16 @@ public class ConsoleUtil {
      * @param plugin
      */
     private void getLogLevel(Plugin plugin) {
-        String logLevel;
-        if (plugin.getResource("config.json") != null) {
+        String logLevel = null;
+        if (IOUtil.getPluginFile(plugin, "config.json") != null) {
             final ConfigUtil configUtil = new ConfigUtil(plugin);
-            logLevel = configUtil.getJsonMember("log-level").getAsString();
+            final JsonElement element = configUtil.getJsonMember("log-level");
+            if (element != null) {
+                logLevel = element.getAsString();
+            }
+
         }
-        else {
+        if (logLevel == null) {
             logLevel = plugin.getConfig().getString("log-level");
         }
 
@@ -173,12 +179,15 @@ public class ConsoleUtil {
      * @param plugin
      */
     private void getPrefix(Plugin plugin) {
-        String prefix;
-        if (plugin.getResource("config.json") != null) {
+        String prefix = null;
+        if (IOUtil.getPluginFile(plugin, "config.json") != null) {
             final ConfigUtil configUtil = new ConfigUtil(plugin);
-            prefix = configUtil.getJsonMember("plugin-prefix").getAsString();
+            final JsonElement element = configUtil.getJsonMember("plugin-prefix");
+            if (element != null) {
+                prefix = element.getAsString();
+            }
         }
-        else {
+        if (prefix == null) {
             prefix = plugin.getConfig().getString("plugin-prefix");
         }
 

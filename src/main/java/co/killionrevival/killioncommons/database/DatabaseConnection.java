@@ -10,6 +10,7 @@ import java.sql.SQLException;
 
 import co.killionrevival.killioncommons.database.models.DatabaseCredentials;
 import co.killionrevival.killioncommons.util.ConfigUtil;
+import co.killionrevival.killioncommons.util.IOUtil;
 import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 
 import com.google.gson.Gson;
@@ -54,7 +55,7 @@ public abstract class DatabaseConnection {
     protected DatabaseConnection(ConsoleUtil logger, Plugin plugin) {
         this.logger = logger;
         this.gson = new Gson();
-        if (plugin.getResource("config.json") != null) {
+        if (IOUtil.getPluginFile(plugin, "config.json") != null) {
             final ConfigUtil configUtil = new ConfigUtil(plugin);
             credentialFilePath = configUtil.getJsonMember("credentialsFilePath").getAsString();
         } else {

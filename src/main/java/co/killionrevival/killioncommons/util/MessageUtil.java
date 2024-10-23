@@ -15,13 +15,13 @@ public class MessageUtil {
     * @param plugin The plugin instance
     */
     public MessageUtil(final Plugin plugin) {
-        final InputStream jsonConfig = plugin.getResource("config.json");
+        final InputStream jsonConfig = IOUtil.getPluginFile(plugin, "config.json");
         if (jsonConfig == null) {
             this.prefix = plugin.getConfig().getString("plugin-prefix");
             return;
         }
         final ConfigUtil configUtil = new ConfigUtil(plugin);
-        this.prefix = configUtil.getJsonMember("pluginPrefix").getAsString();
+        this.prefix = configUtil.getJsonMember("plugin-prefix").getAsString();
     }
 
     /**
