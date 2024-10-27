@@ -7,6 +7,9 @@ import net.kyori.adventure.text.format.Style;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Utility class for generating Lore for an ItemStack
+ */
 public class LoreUtil {
     /**
      * Create a list of lore components from a list of strings.
