@@ -39,6 +39,10 @@ public class LoreUtil {
         final List<Component> componentList = new ArrayList<>();
 
         for (final String text : strings) {
+            if (text.isBlank() || text.isEmpty()) {
+                componentList.add(Component.empty());
+            }
+
             final TextComponent component = Component.text(text).style(overallTextStyle);
             if (wrapTextAt != null) {
                 componentList.addAll(wrapText(List.of(component), wrapTextAt));
