@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import lombok.Setter;
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.plugin.Plugin;
@@ -25,7 +27,6 @@ import java.util.stream.Collectors;
  */
 public class ConfigUtil {
     private final Logger logger = LogManager.getLogger(ConfigUtil.class);
-    private final Gson gson = new GsonBuilder().serializeNulls().setPrettyPrinting().create();
 
     private Class<?> type;
     private File configFile;
@@ -33,12 +34,24 @@ public class ConfigUtil {
     private final Plugin plugin;
     private final Path configDirectory;
 
+    @Setter
+    private Gson gson;
+
+    public interface ICustomGson {
+        Gson getGson();
+    }
+
     public ConfigUtil(final Plugin plugin) {
         this.plugin = plugin;
         configDirectory = plugin.getDataPath();
         this.configFileName = "config.json";
         configFile = new File(configDirectory + "/" + configFileName);
         type = null;
+        final GsonBuilder builder = new GsonBuilder()
+                .serializeNulls()
+                .setPrettyPrinting();
+        GsonComponentSerializer.gson().populator().apply(builder);
+        gson = builder.create();
     }
 
     public ConfigUtil(final Plugin plugin, Class<?> configClass) {
@@ -51,6 +64,11 @@ public class ConfigUtil {
         this.configFileName = configFileName;
         configFile = new File(configDirectory + "/" + configFileName);
         type = configClass;
+    }
+
+    public ConfigUtil(final String configFileName, final Plugin plugin, Class<?> configClass, final ICustomGson gson) {
+        this(configFileName, plugin, configClass);
+        this.gson = gson.getGson();
     }
 
     /**

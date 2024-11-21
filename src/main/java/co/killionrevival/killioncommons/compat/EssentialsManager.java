@@ -13,11 +13,6 @@ public class EssentialsManager implements Compat {
     @Override
     public void init(Plugin essentials) {
         this.essentials = (Essentials) essentials;
-        try {
-            this.essentials.getItemDb().registerResolver(KillionCommons.getInstance(), "killion", new EssentialsItemResolver());
-        } catch (Exception e) {
-            KillionCommons.getUtil().getConsoleUtil().sendThrowable(e);
-        }
 
         KillionCommons.getUtil().getConsoleUtil().sendSuccess("Registered Essentials ItemDB.");
     }
@@ -27,10 +22,10 @@ public class EssentialsManager implements Compat {
             return;
         }
 
-        try {
-            this.essentials.getItemDb().unregisterResolver(KillionCommons.getInstance(), "killion");
-        } catch (Exception e) {
-            KillionCommons.getUtil().getConsoleUtil().sendThrowable(e);
-        }
+        //try {
+        //    this.essentials.getItemDb().unregisterResolver(KillionCommons.getInstance(), "killion");
+        //} catch (Exception e) {
+        //    KillionCommons.getUtil().getConsoleUtil().sendThrowable(e);
+        //}
     }
 }

@@ -1,7 +1,6 @@
 package co.killionrevival.killioncommons;
 
 import co.killionrevival.killioncommons.compat.EssentialsManager;
-import co.killionrevival.killioncommons.listeners.CrowbarListeners;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
 import co.killionrevival.killioncommons.npc.NpcManager;
 import co.killionrevival.killioncommons.npc.listeners.AttackPacketListener;
@@ -52,7 +51,6 @@ public final class KillionCommons extends JavaPlugin {
     }
 
     private void initListeners() {
-        getServer().getPluginManager().registerEvents(new CrowbarListeners(), this);
         getServer().getPluginManager().registerEvents(new KillionGameplayListeners(), this);
         util.getConsoleUtil().sendSuccess("KillionCommons listeners initialized.");
     }

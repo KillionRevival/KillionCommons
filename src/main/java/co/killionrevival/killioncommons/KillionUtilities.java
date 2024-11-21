@@ -14,7 +14,7 @@ public class KillionUtilities {
     private final ConsoleUtil consoleUtil;
     private final MessageUtil messageUtil;
     private final SkinUtil skinUtil;
-    private final ConfigUtil configUtil;
+    private ConfigUtil configUtil;
 
     public KillionUtilities(final Plugin plugin) {
         this.consoleUtil = new ConsoleUtil(plugin);
