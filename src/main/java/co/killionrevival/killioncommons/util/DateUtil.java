@@ -1,8 +1,10 @@
 package co.killionrevival.killioncommons.util;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -11,27 +13,28 @@ public class DateUtil {
 
     /**
      * Returns a String in an example format of:
-     * Will use the system default timezone
-     * @param dateTime Date Time to parse into a readable string
+     * Uses system default ZoneId
+     * "(2-digit Month) (Month in English) (4-digit Year) at (hh:mm:ss)" (military time)
+     * @param instant Instant to parse into a readable string
      * @return "(2-digit Month) (Month in English) (4-digit Year) at (hh:mm:ss)" (military time)
      */
-    public static String getHumanReadableDateTimeString(final LocalDateTime dateTime) {
-        return getHumanReadableDateTimeString(dateTime, ZoneId.systemDefault());
+    public static String getHumanReadableDateTimeString(
+            final Instant instant
+    ) {
+        return getHumanReadableDateTimeString(instant, ZoneId.systemDefault());
     }
 
     /**
      * Returns a String in an example format of:
      * "(2-digit Month) (Month in English) (4-digit Year) at (hh:mm:ss)" (military time)
-     * @param dateTime DateTime to parse into a readable string
-     * @param timeZone Timezone to use
+     * @param instant Instant to parse into a readable string
      * @return "(2-digit Month) (Month in English) (4-digit Year) at (hh:mm:ss)" (military time)
      */
     public static String getHumanReadableDateTimeString(
-            final LocalDateTime dateTime,
+            final Instant instant,
             final ZoneId timeZone
     ) {
-        final ZonedDateTime zonedDateTime = dateTime.atZone(timeZone);
-        return HUMAN_READABLE_DATE.format(zonedDateTime);
+        return HUMAN_READABLE_DATE.format(instant.atZone(timeZone));
     }
 
     /**
