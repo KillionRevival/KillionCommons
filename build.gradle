@@ -4,6 +4,7 @@ plugins {
     id 'maven-publish'
     id("io.papermc.paperweight.userdev") version "1.7.2"
     id "io.freefair.lombok" version "8.10"
+    id 'com.gradleup.shadow' version '8.3.0'
 }
 
 group = 'co.killionrevival'
@@ -39,6 +40,8 @@ dependencies {
 
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'com.zaxxer:HikariCP:5.1.0'
+
+    implementation 'fr.mrmicky:fastboard:2.1.3'
 
     compileOnly ("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude group: 'org.bukkit', module: 'bukkit'
@@ -95,9 +98,9 @@ assemble {
     dependsOn reobfJar
 }
 
-// shadowJar {
-//   configurations = [project.configurations.shadow]
-// }
+shadowJar {
+    relocate 'fr.mrmicky.fastboard', 'co.killionrevival.fastboard'
+}
 
 publishing {
     publications {

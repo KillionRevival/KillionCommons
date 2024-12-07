@@ -1,16 +1,15 @@
 package co.killionrevival.killioncommons;
 
-import co.killionrevival.killioncommons.compat.EssentialsManager;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
 import co.killionrevival.killioncommons.npc.NpcManager;
 import co.killionrevival.killioncommons.npc.listeners.AttackPacketListener;
+import co.killionrevival.killioncommons.scoreboard.KillionScoreboardManager;
+import co.killionrevival.killioncommons.scoreboard.ScoreboardListeners;
 import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class KillionCommons extends JavaPlugin {
@@ -24,7 +23,7 @@ public final class KillionCommons extends JavaPlugin {
     private NpcManager npcManager;
 
     @Getter
-    private EssentialsManager essentialsManager;
+    private KillionScoreboardManager scoreboardManager;
 
     @Override
     public void onEnable() {
@@ -48,22 +47,16 @@ public final class KillionCommons extends JavaPlugin {
 
     private void initManagers() {
         this.npcManager = new NpcManager();
+        this.scoreboardManager = new KillionScoreboardManager();
     }
 
     private void initListeners() {
         getServer().getPluginManager().registerEvents(new KillionGameplayListeners(), this);
+        getServer().getPluginManager().registerEvents(new ScoreboardListeners(), this);
         util.getConsoleUtil().sendSuccess("KillionCommons listeners initialized.");
     }
 
     private void initCompat() {
-        final Plugin essentials = Bukkit.getPluginManager().getPlugin("Essentials");
-        if (essentials != null && essentials.isEnabled()) {
-            essentialsManager = new EssentialsManager();
-            essentialsManager.init(essentials);
-        }
-        else {
-            KillionCommons.getUtil().getConsoleUtil().sendError("Essentials is not loaded. Items will not attempt to be loaded into Essentials itemdb.");
-        }
 
     }
 
@@ -77,9 +70,6 @@ public final class KillionCommons extends JavaPlugin {
     }
 
     private void destroyCompat() {
-        if (essentialsManager != null) {
-            essentialsManager.destroy();
-        }
     }
 
     // endregion
