@@ -1,0 +1,14 @@
+name: KillionCommons
+version: ${version}
+main: co.killionrevival.killioncommons.KillionCommons
+loader: co.killionrevival.killioncommons.KillionCommonsLoader
+authors: [tut, flyerzrule, Fross, DecryptedX]
+api-version: "1.21.3"
+dependencies:
+  server:
+    ProtocolLib:
+      load: BEFORE
+    Essentials:
+      load: BEFORE
+    Vault:
+        load: BEFORE

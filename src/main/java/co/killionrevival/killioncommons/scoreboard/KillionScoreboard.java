@@ -3,15 +3,9 @@ package co.killionrevival.killioncommons.scoreboard;
 import co.killionrevival.killioncommons.KillionCommons;
 import fr.mrmicky.fastboard.adventure.FastBoard;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

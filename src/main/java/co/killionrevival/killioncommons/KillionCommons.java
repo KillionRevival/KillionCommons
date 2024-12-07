@@ -1,5 +1,7 @@
 package co.killionrevival.killioncommons;
 
+import co.killionrevival.killioncommons.commands.ScoreboardCommand;
+import co.killionrevival.killioncommons.config.KillionCommonsConfig;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
 import co.killionrevival.killioncommons.npc.NpcManager;
 import co.killionrevival.killioncommons.npc.listeners.AttackPacketListener;
@@ -9,8 +11,18 @@ import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
+import io.leangen.geantyref.TypeToken;
 import lombok.Getter;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.incendo.cloud.annotations.AnnotationParser;
+import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.meta.SimpleCommandMeta;
+import org.incendo.cloud.paper.PaperCommandManager;
+import org.incendo.cloud.paper.util.sender.PaperSimpleSenderMapper;
+import org.incendo.cloud.paper.util.sender.PlayerSource;
+import org.incendo.cloud.paper.util.sender.Source;
+import org.incendo.cloud.setting.ManagerSetting;
 
 public final class KillionCommons extends JavaPlugin {
     @Getter
@@ -18,6 +30,15 @@ public final class KillionCommons extends JavaPlugin {
 
     @Getter
     private static KillionUtilities util;
+
+    @Getter
+    private static PaperCommandManager<Source> commandManager;
+
+    @Getter
+    private static AnnotationParser<Source> annotationParser;
+
+    @Getter
+    private static KillionCommonsConfig customConfig;
 
     @Getter
     private NpcManager npcManager;
@@ -28,13 +49,15 @@ public final class KillionCommons extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
-        saveDefaultConfig();
         instance = this;
-        util = new KillionUtilities(this);
+        util = new KillionUtilities(this, KillionCommonsConfig.class);
+        util.getConfigUtil().saveDefaultConfig();
+        customConfig = (KillionCommonsConfig) util.getConfigUtil().getConfigObject();
         initCompat();
         initListeners();
         initManagers();
         initProtocolLib();
+        setUpCommands();
         util.getConsoleUtil().sendSuccess("KillionCommons has been enabled.");
     }
 
@@ -70,6 +93,34 @@ public final class KillionCommons extends JavaPlugin {
     }
 
     private void destroyCompat() {
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    private void setUpCommands() {
+        commandManager =
+                PaperCommandManager.builder(PaperSimpleSenderMapper.simpleSenderMapper())
+                                   .executionCoordinator(ExecutionCoordinator.simpleCoordinator())
+                                   .buildOnEnable(this);
+
+        commandManager.settings().set(ManagerSetting.ALLOW_UNSAFE_REGISTRATION, true);
+        commandManager.settings().set(ManagerSetting.OVERRIDE_EXISTING_COMMANDS, true);
+
+        commandManager.parameterInjectorRegistry().registerInjector(
+                TypeToken.get(Player.class),
+                (context, annotationAccessor) -> {
+                    final Source sender = context.sender();
+
+                    if (sender instanceof PlayerSource playerSource) {
+                        return playerSource.source();
+                    }
+
+                    return null;
+                }
+        );
+
+        util.getConsoleUtil().sendInfo("Registering commands:");
+        annotationParser = new AnnotationParser<>(commandManager, Source.class, params -> SimpleCommandMeta.empty());
+        annotationParser.parse(new ScoreboardCommand(scoreboardManager));
     }
 
     // endregion

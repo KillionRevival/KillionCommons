@@ -50,6 +50,11 @@ dependencies {
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.spigotmc', module: 'spigot-api'
     }
+
+    implementation "org.incendo:cloud-core:2.0.0"
+    implementation "org.incendo:cloud-annotations:2.0.0"
+    annotationProcessor "org.incendo:cloud-annotations:2.0.0"
+    implementation "org.incendo:cloud-paper:2.0.0-beta.10"
 }
 
 def targetJavaVersion = 21
@@ -84,7 +89,7 @@ processResources {
     def props = [version: version]
     inputs.properties props
     filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
+    filesMatching('paper-plugin.yml') {
         expand props
     }
 }

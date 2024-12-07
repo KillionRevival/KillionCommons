@@ -2,6 +2,7 @@ package co.killionrevival.killioncommons.scoreboard;
 
 import co.killionrevival.killioncommons.KillionCommons;
 import co.killionrevival.killioncommons.util.console.ConsoleUtil;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -14,6 +15,7 @@ public class KillionScoreboardManager {
     private static final ConsoleUtil logger = KillionCommons.getUtil().getConsoleUtil();
 
     final Map<UUID, KillionScoreboard> scoreboardMap;
+    @Getter
     final Map<Plugin, ScoreboardAddition> additions;
 
     public KillionScoreboardManager() {
@@ -59,6 +61,32 @@ public class KillionScoreboardManager {
                     board -> board.additionMap.remove(addition.componentName())
             );
         }
+    }
+
+    /**
+     * Toggle a scoreboard addition for a player
+     * @param player The player to toggle the addition for
+     * @param additionName The name of the addition to toggle
+     */
+    public void toggleAdditionForPlayer(
+            final Player player,
+            final String additionName
+    ) {
+        if (scoreboardMap.containsKey(player.getUniqueId())) {
+            scoreboardMap.get(player.getUniqueId()).toggleAddition(additionName);
+        }
+    }
+
+    /**
+     * Toggle the scoreboard display for a player
+     * @param player The player to toggle the scoreboard for
+     */
+    public void toggleScoreboardForPlayer(final Player player) {
+        if (scoreboardMap.containsKey(player.getUniqueId())) {
+            stopScoreboardDisplay(player);
+            return;
+        }
+        startScoreboardDisplay(player);
     }
 
     protected void startScoreboardDisplay(Player player) {
