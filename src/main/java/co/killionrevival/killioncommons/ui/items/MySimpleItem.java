@@ -16,13 +16,13 @@ import xyz.xenondevs.invui.item.ItemProvider;
 import xyz.xenondevs.invui.item.builder.ItemBuilder;
 import xyz.xenondevs.invui.item.impl.AbstractItem;
 
-public class SimpleItem extends AbstractItem {
+public class MySimpleItem extends AbstractItem {
   private final Material material;
   private final String title;
   private final String[] loreLines;
   private Runnable clickFunction;
 
-  public SimpleItem(Material material, String title, String[] loreLines) {
+  public MySimpleItem(Material material, String title, String[] loreLines) {
     this.material = material;
     this.title = title;
     this.loreLines = loreLines;
@@ -30,16 +30,16 @@ public class SimpleItem extends AbstractItem {
     };
   }
 
-  public SimpleItem(Material material, String title, String[] loreLines, Runnable clickFunction) {
+  public MySimpleItem(Material material, String title, String[] loreLines, Runnable clickFunction) {
     this(material, title, loreLines);
     this.clickFunction = clickFunction;
   }
 
-  public SimpleItem(Material material, String title) {
+  public MySimpleItem(Material material, String title) {
     this(material, title, new String[] {});
   }
 
-  public SimpleItem(Material material, String title, Runnable clickFunction) {
+  public MySimpleItem(Material material, String title, Runnable clickFunction) {
     this(material, title, new String[] {}, clickFunction);
   }
 
