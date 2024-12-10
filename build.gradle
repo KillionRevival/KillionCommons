@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'co.killionrevival'
-version = '3.2-SNAPSHOT'
+version = '3.3-SNAPSHOT'
 
 repositories {
     gradlePluginPortal()
@@ -28,6 +28,7 @@ repositories {
     }
     maven { url 'https://jitpack.io' }
     maven { url "https://repo.dmulloy2.net/repository/public/" }
+    maven { url 'https://repo.xenondevs.xyz/releases'}
 }
 
 dependencies {
@@ -50,6 +51,8 @@ dependencies {
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.spigotmc', module: 'spigot-api'
     }
+
+    compileOnly "xyz.xenondevs.invui:invui:1.43"
 
     implementation "org.incendo:cloud-core:2.0.0"
     implementation "org.incendo:cloud-annotations:2.0.0"

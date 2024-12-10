@@ -13,6 +13,8 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import io.leangen.geantyref.TypeToken;
 import lombok.Getter;
+import xyz.xenondevs.invui.InvUI;
+
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.incendo.cloud.annotations.AnnotationParser;
@@ -53,6 +55,7 @@ public final class KillionCommons extends JavaPlugin {
         util = new KillionUtilities(this, KillionCommonsConfig.class);
         util.getConfigUtil().saveDefaultConfig();
         customConfig = (KillionCommonsConfig) util.getConfigUtil().getConfigObject();
+        InvUI.getInstance().setPlugin(this);
         initCompat();
         initListeners();
         initManagers();
