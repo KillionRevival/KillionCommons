@@ -7,7 +7,7 @@ import org.bukkit.entity.Player;
 
 import co.killionrevival.killioncommons.ui.items.ScrollDownItem;
 import co.killionrevival.killioncommons.ui.items.ScrollUpItem;
-import co.killionrevival.killioncommons.ui.items.SimpleItem;
+import co.killionrevival.killioncommons.ui.items.MySimpleItem;
 import xyz.xenondevs.invui.gui.Gui;
 import xyz.xenondevs.invui.gui.ScrollGui;
 import xyz.xenondevs.invui.gui.structure.Marker;
@@ -49,9 +49,9 @@ public class ScrollPanel extends Panel {
         .addIngredient('u', new ScrollUpItem())
         .addIngredient('d', new ScrollDownItem())
         .addIngredient('B',
-            new SimpleItem(Material.ARROW, "Back", () -> this.goBack.run()))
+            new MySimpleItem(Material.ARROW, "Back", () -> this.goBack.run()))
         .addIngredient('R',
-            new SimpleItem(Material.COMPASS, "Refresh", this::refresh))
+            new MySimpleItem(Material.COMPASS, "Refresh", this::refresh))
         .setContent(items)
         .build();
       }
@@ -65,7 +65,7 @@ public class ScrollPanel extends Panel {
         .addIngredient('u', new ScrollUpItem())
         .addIngredient('d', new ScrollDownItem())
         .addIngredient('R',
-            new SimpleItem(Material.COMPASS, "Refresh", this::refresh))
+            new MySimpleItem(Material.COMPASS, "Refresh", this::refresh))
         .setContent(items)
         .build();
   }
