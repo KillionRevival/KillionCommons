@@ -13,7 +13,6 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import io.leangen.geantyref.TypeToken;
 import lombok.Getter;
-import xyz.xenondevs.invui.InvUI;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
