@@ -26,8 +26,6 @@ public final class KillionCommonsLoader implements PluginLoader {
         resolver.addRepository(new RemoteRepository.Builder("mavenCentral", "default", "https://repo1.maven.org/maven2/").build());
         resolver.addDependency(new Dependency(new DefaultArtifact("org.incendo:cloud-annotations:2.0.0"), null));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.incendo:cloud-paper:2.0.0-beta.10"), null));
-        resolver.addRepository(new RemoteRepository.Builder("xenondevs", "default", "https://repo.xenondevs.xyz/releases/").build());
-        resolver.addDependency(new Dependency(new DefaultArtifact("xyz.xenondevs.invui:invui:pom:1.43"), null));
         classpathBuilder.addLibrary(resolver);
     }
 }
