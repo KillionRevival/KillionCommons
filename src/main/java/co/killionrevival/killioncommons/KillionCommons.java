@@ -55,7 +55,6 @@ public final class KillionCommons extends JavaPlugin {
         util = new KillionUtilities(this, KillionCommonsConfig.class);
         util.getConfigUtil().saveDefaultConfig();
         customConfig = (KillionCommonsConfig) util.getConfigUtil().getConfigObject();
-        InvUI.getInstance().setPlugin(this);
         initCompat();
         initListeners();
         initManagers();
