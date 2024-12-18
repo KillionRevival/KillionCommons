@@ -10,4 +10,5 @@ public class KillionCommonsConfig {
 
     boolean disableStrength2;
     boolean enableStrength2OnBeacons;
+    boolean enableMendingChanges;
 }

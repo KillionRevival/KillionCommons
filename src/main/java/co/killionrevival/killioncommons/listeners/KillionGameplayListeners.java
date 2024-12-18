@@ -1,21 +1,56 @@
 package co.killionrevival.killioncommons.listeners;
 
 import co.killionrevival.killioncommons.KillionCommons;
+import co.killionrevival.killioncommons.config.KillionCommonsConfig;
+import io.papermc.paper.event.inventory.PaperInventoryMoveItemEvent;
+import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.List;
 
 public class KillionGameplayListeners implements Listener {
+    private final static KillionCommonsConfig config = KillionCommons.getCustomConfig();
     final static List<EntityDamageEvent.DamageCause> playerDamageCauses = List.of(
             EntityDamageEvent.DamageCause.ENTITY_ATTACK,
-            EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK);
+            EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK,
+            EntityDamageEvent.DamageCause.PROJECTILE
+    );
+
+    /**
+     * This method adds the Curse of Vanishing to any item that is enchanted with Mending.
+     */
+    @EventHandler
+    public void addCurseOfVanishingToAnythingEnchantedWithMendingWhenInventoryChange(final PlayerInventorySlotChangeEvent event) {
+        final Inventory inventory = event.getPlayer().getOpenInventory().getInventory(event.getRawSlot());
+        if (inventory == null) {
+            return;
+        }
+        final ItemStack newItem = event.getNewItemStack();
+        final ItemStack newItemWithCurse = addMendingEnchantToItemIfNotExists(newItem);
+        if (newItem == newItemWithCurse) {
+            return;
+        }
+
+        inventory.setItem(event.getSlot(), newItemWithCurse);
+    }
+
 
     @EventHandler
     public void removeMobDropsUnlessKilledByPlayer(final EntityDeathEvent event) {
@@ -42,7 +77,7 @@ public class KillionGameplayListeners implements Listener {
      */
     @EventHandler
     public void onlyAllowStrengthOne(final EntityPotionEffectEvent event) {
-        if (!KillionCommons.getInstance().getConfig().getBoolean("disable-strength-2")) {
+        if (!config.isDisableStrength2()) {
             return;
         }
         if (event.getNewEffect() == null) {
@@ -53,7 +88,7 @@ public class KillionGameplayListeners implements Listener {
         }
 
         int strength = event.getNewEffect().getAmplifier();
-        boolean enableOnBeacons = KillionCommons.getInstance().getConfig().getBoolean("enable-strength-2-on-beacons");
+        boolean enableOnBeacons = config.isEnableStrength2OnBeacons();
 
         if (strength <= 0) {
             return;
@@ -68,5 +103,17 @@ public class KillionGameplayListeners implements Listener {
         }
 
         event.setCancelled(true);
+    }
+
+    private ItemStack addMendingEnchantToItemIfNotExists(final ItemStack stack) {
+        if (stack == null || !stack.containsEnchantment(Enchantment.MENDING)) {
+            return stack;
+        }
+        if (stack.containsEnchantment(Enchantment.VANISHING_CURSE)) {
+            return stack;
+        }
+        final ItemStack newStack = stack.clone();
+        newStack.addEnchantment(Enchantment.VANISHING_CURSE, 1);
+        return newStack;
     }
 }

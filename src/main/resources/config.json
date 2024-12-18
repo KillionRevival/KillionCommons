@@ -3,5 +3,6 @@
   "debugMode": true,
   "loglevel": "INFO",
   "disableStrength2": true,
-  "enableStrength2OnBeacons": true
+  "enableStrength2OnBeacons": true,
+  "enableMendingChanges": true
 }
