@@ -26,7 +26,7 @@ public class ScoreboardCommand {
         return scoreboardManager.getAdditions().values().stream().map(ScoreboardAddition::componentName).toList();
     }
 
-    @Command(value = "toggle <component>", requiredSender = PlayerSource.class)
+    @Command(value = "toggle [component]", requiredSender = PlayerSource.class)
     public void toggleCommand(
             final Player player,
             @Argument(
@@ -37,7 +37,7 @@ public class ScoreboardCommand {
     ) {
         if (component == null || component.isEmpty()) {
             scoreboardManager.toggleScoreboardForPlayer(player);
-            messageUtil.sendPrefixMessage(player, "Toggled scoreboard display.");
+            messageUtil.sendPrefixMessage(player, "Toggled scoreboard display. It is now " + (scoreboardManager.isScoreboardEnabledForPlayer(player) ? "enabled" : "disabled") + ".");
             return;
         }
 
@@ -50,6 +50,6 @@ public class ScoreboardCommand {
         }
 
         scoreboardManager.toggleAdditionForPlayer(player, component);
-        messageUtil.sendPrefixMessage(player, "Toggled display of the " + component + " component.");
+        messageUtil.sendPrefixMessage(player, "Toggled display of the " + component + " component. It is now " + (scoreboardManager.isAdditionEnabledForPlayer(player, component) ? "enabled" : "disabled") + ".");
     }
 }

@@ -58,6 +58,14 @@ public class KillionScoreboard {
     }
 
     /**
+     * Check if a scoreboard addition is enabled for a player
+     * @param additionName The name of the addition to check
+     */
+    public boolean isAdditionEnabled(final String additionName) {
+        return additionMap.get(additionName).isEnabled();
+    }
+
+    /**
      * Render the scoreboard for a player
      */
     public void updateScoreboardDisplay() {

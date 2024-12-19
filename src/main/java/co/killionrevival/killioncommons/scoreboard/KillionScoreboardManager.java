@@ -78,6 +78,29 @@ public class KillionScoreboardManager {
     }
 
     /**
+     * Check if a scoreboard is enabled for a player
+     * @param player The player to check for
+     * @return True if the scoreboard is enabled, false otherwise
+     */
+    public boolean isScoreboardEnabledForPlayer(final Player player) {
+        return scoreboardMap.containsKey(player.getUniqueId());
+    }
+
+    /**
+     * Check if a scoreboard addition is enabled for a player
+     * @param player The player to check for
+     * @param additionName The name of the addition to check
+     * @return True if the addition is enabled, false otherwise
+     */
+    public boolean isAdditionEnabledForPlayer(
+            final Player player,
+            final String additionName
+    ) {
+        return scoreboardMap.containsKey(player.getUniqueId()) &&
+                scoreboardMap.get(player.getUniqueId()).isAdditionEnabled(additionName);
+    }
+
+    /**
      * Toggle the scoreboard display for a player
      * @param player The player to toggle the scoreboard for
      */
