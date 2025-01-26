@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'co.killionrevival'
-version = '3.3.4-SNAPSHOT'
+version = '3.3.5-SNAPSHOT'
 
 repositories {
     gradlePluginPortal()
@@ -105,6 +105,7 @@ assemble {
 
 shadowJar {
     relocate 'fr.mrmicky.fastboard', 'co.killionrevival.fastboard'
+    relocate 'org.incendo.cloud', 'co.killionrevival.cloud'
 }
 
 publishing {
