@@ -69,7 +69,7 @@ public class KillionScoreboard {
      * Render the scoreboard for a player
      */
     public void updateScoreboardDisplay() {
-        final List<Component> boardLines = new ArrayList<>(List.of()); // Not sure what to put here yet!
+        final List<Component> boardLines = new ArrayList<>(); // Not sure what to put here yet!
 
         additionMap.values().stream().filter(ScoreboardAddition::isEnabled).forEach(
                 addition -> boardLines.addAll(addition.getLinesToAdd())

@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +25,7 @@ public class KillionScoreboardManager {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(
                 KillionCommons.getInstance(),
                 new UpdateScoreboardTask(),
-                20 * 10,
+                0,
                 20
         );
     }
@@ -113,8 +114,15 @@ public class KillionScoreboardManager {
     }
 
     protected void startScoreboardDisplay(Player player) {
-        logger.sendDebug("Starting scoreboard display for " + player.getName());
-        scoreboardMap.put(player.getUniqueId(), new KillionScoreboard(player));
+        logger.sendDebug("Starting scoreboard display for " + player.getName() + " in 2 seconds");
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (player.isOnline()) {
+                    scoreboardMap.put(player.getUniqueId(), new KillionScoreboard(player));
+                }
+            }
+        }.runTaskLater(KillionCommons.getInstance(), 40);
     }
 
     protected void stopScoreboardDisplay(Player player) {
@@ -128,7 +136,7 @@ public class KillionScoreboardManager {
     private class UpdateScoreboardTask implements Runnable {
         @Override
         public void run() {
-            scoreboardMap.values().forEach(KillionScoreboard::updateScoreboardDisplay);
+            scoreboardMap.forEach((player, entry) -> entry.updateScoreboardDisplay());
         }
     }
 }
