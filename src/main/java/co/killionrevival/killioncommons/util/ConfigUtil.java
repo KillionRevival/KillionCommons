@@ -66,8 +66,8 @@ public class ConfigUtil {
         type = configClass;
     }
 
-    public ConfigUtil(final String configFileName, final Plugin plugin, Class<?> configClass, final ICustomGson gson) {
-        this(configFileName, plugin, configClass);
+    public ConfigUtil(final Plugin plugin, Class<?> configClass, final ICustomGson gson) {
+        this(plugin, configClass);
         this.gson = gson.getGson();
     }
 

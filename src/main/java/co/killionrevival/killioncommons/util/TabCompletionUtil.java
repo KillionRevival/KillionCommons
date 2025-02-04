@@ -13,7 +13,7 @@ public class TabCompletionUtil {
             return Bukkit.getOnlinePlayers().stream()
                     .map(Player::getName)
                     .filter(name -> name.toLowerCase().startsWith(input.toLowerCase()))
-                    .filter(name -> !name.toLowerCase().equals(currentPlayer.getName().toLowerCase()))
+                    .filter(name -> !name.equalsIgnoreCase(currentPlayer.getName()))
                     .collect(Collectors.toList());
         }
         return Bukkit.getOnlinePlayers().stream()

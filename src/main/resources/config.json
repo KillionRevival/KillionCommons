@@ -4,5 +4,6 @@
   "loglevel": "INFO",
   "disableStrength2": true,
   "enableStrength2OnBeacons": true,
-  "enableMendingChanges": true
+  "enableMendingChanges": true,
+  "swordBlocking": true
 }

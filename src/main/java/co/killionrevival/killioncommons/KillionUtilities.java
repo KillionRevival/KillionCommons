@@ -7,6 +7,9 @@ import co.killionrevival.killioncommons.util.SkinUtil;
 import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 import lombok.Getter;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Arrays;
 
 @Getter
 public class KillionUtilities {
@@ -30,5 +33,10 @@ public class KillionUtilities {
         this.messageUtil = new MessageUtil(plugin);
         this.broadcastUtil = new BroadcastUtil(plugin);
         this.skinUtil = new SkinUtil(plugin);
+    }
+
+    public KillionUtilities(final Plugin plugin, Class<?> configClass, ConfigUtil.ICustomGson gson) {
+        this(plugin, configClass);
+        configUtil = new ConfigUtil(plugin, configClass, gson);
     }
 }

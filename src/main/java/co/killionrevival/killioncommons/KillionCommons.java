@@ -1,5 +1,6 @@
 package co.killionrevival.killioncommons;
 
+import co.killionrevival.killioncommons.commands.CommonsCommand;
 import co.killionrevival.killioncommons.commands.ScoreboardCommand;
 import co.killionrevival.killioncommons.config.KillionCommonsConfig;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
@@ -122,6 +123,13 @@ public final class KillionCommons extends JavaPlugin {
         util.getConsoleUtil().sendInfo("Registering commands:");
         annotationParser = new AnnotationParser<>(commandManager, Source.class, params -> SimpleCommandMeta.empty());
         annotationParser.parse(new ScoreboardCommand(scoreboardManager));
+        annotationParser.parse(new CommonsCommand());
+    }
+
+    public static void reloadCustomConfig() {
+        util.getConsoleUtil().sendInfo("Reloading custom config");
+        customConfig.merge((KillionCommonsConfig) util.getConfigUtil().getConfigObject());
+        util.getConsoleUtil().sendInfo("Custom config reloaded.");
     }
 
     // endregion
