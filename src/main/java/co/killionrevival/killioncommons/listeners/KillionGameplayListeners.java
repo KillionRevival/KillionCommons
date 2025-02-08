@@ -2,6 +2,7 @@ package co.killionrevival.killioncommons.listeners;
 
 import co.killionrevival.killioncommons.KillionCommons;
 import co.killionrevival.killioncommons.config.KillionCommonsConfig;
+import co.killionrevival.killioncommons.util.EnchantmentType;
 import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 import io.papermc.paper.event.player.PlayerInventorySlotChangeEvent;
 import net.minecraft.core.component.DataComponents;
@@ -10,34 +11,47 @@ import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.item.component.Consumable;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.craftbukkit.inventory.CraftItemStack;
-import org.bukkit.damage.DamageSource;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Mob;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemConsumeEvent;
-import org.bukkit.event.player.PlayerItemDamageEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 public class KillionGameplayListeners implements Listener {
     private final static ConsoleUtil logger = KillionCommons.getUtil().getConsoleUtil();
     private final static KillionCommonsConfig config = KillionCommons.getCustomConfig();
+
+    final double REDUCTION_PER_ARMOR_POINT = 0.04;
+    final double REDUCTION_PER_RESISTANCE_LEVEL = 0.2;
+
     final static List<EntityDamageEvent.DamageCause> playerDamageCauses = List.of(
             EntityDamageEvent.DamageCause.ENTITY_ATTACK,
             EntityDamageEvent.DamageCause.ENTITY_SWEEP_ATTACK,
@@ -51,26 +65,60 @@ public class KillionGameplayListeners implements Listener {
             Material.DIAMOND_SWORD,
             Material.NETHERITE_SWORD
     );
+    private final Set<EntityDamageEvent.DamageCause> ARMOR_IGNORING_CAUSES = Set.of(
+    EntityDamageEvent.DamageCause.FIRE_TICK,
+    EntityDamageEvent.DamageCause.SUFFOCATION,
+    EntityDamageEvent.DamageCause.DROWNING,
+    EntityDamageEvent.DamageCause.STARVATION,
+    EntityDamageEvent.DamageCause.FALL,
+    EntityDamageEvent.DamageCause.VOID,
+    EntityDamageEvent.DamageCause.CUSTOM,
+    EntityDamageEvent.DamageCause.MAGIC,
+    EntityDamageEvent.DamageCause.WITHER,  // From 1.9
+    EntityDamageEvent.DamageCause.FLY_INTO_WALL,
+    EntityDamageEvent.DamageCause.DRAGON_BREATH // In 1.19 FIRE bypasses armor, but it doesn't in 1.8 so we don't add it here
+    );
+
     final static Set<UUID> playersBlocking = new HashSet<>();
 
     @SuppressWarnings("UnstableApiUsage")
-    @EventHandler
-    public void onPlayerDamageBySword(final EntityDamageEvent event) {
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPlayerDamageBySword(final EntityDamageByEntityEvent event) {
         if (!config.isSwordBlocking()) {
             return;
         }
-        if (!(event.getEntity() instanceof final Player player)) {
-            return;
-        }
-        final DamageSource source = event.getDamageSource();
-        if (!(source.getDirectEntity() instanceof Player damagingPlayer)) {
-            return;
-        }
-        logger.sendDebug("Player " + player.getName() + " was damaged by " + damagingPlayer.getName());
-        if (playersBlocking.contains(player.getUniqueId())) {
+
+        if (event.getEntity() instanceof final Player player
+                && event.getDamager() instanceof final Player damagingPlayer
+                && playersBlocking.contains(player.getUniqueId())
+        ) {
             logger.sendDebug("Player " + player.getName() + " was blocking, reducing damage");
-            event.setDamage(event.getDamage() / 2);
+            double baseDamage = event.getDamage();
+            if (baseDamage > 0) {
+                double finalDamageHalved = baseDamage - 1;
+                finalDamageHalved *= 0.5;
+                if (finalDamageHalved < 0) {
+                    finalDamageHalved = 0;
+                }
+                logger.sendDebug("New Base Damage: " + finalDamageHalved);
+                event.setDamage(EntityDamageEvent.DamageModifier.BASE, finalDamageHalved);
+            }
+            logger.sendDebug("Player " + player.getName() + " was damaged by " + damagingPlayer.getName());
         }
+
+        // OCM Old Armor Strength Calculations
+        // adapted from
+        // https://github.com/kernitus/BukkitOldCombatMechanics/blob/master/src/main/kotlin/kernitus/plugin/OldCombatMechanics/module/ModuleOldArmourStrength.kt
+        final HashMap<EntityDamageEvent.DamageModifier, Double> validModifiers =
+                new HashMap<>(Arrays.stream(EntityDamageEvent.DamageModifier.values()).filter(event::isApplicable)
+                      .collect(Collectors.toMap(
+                              modifier -> modifier, event::getDamage
+                      )));
+        calculateDefenceDamageReduction((LivingEntity) event.getEntity(), validModifiers, event.getCause());
+
+        validModifiers.forEach(event::setDamage);
+
+        logger.sendDebug("Final Damage: " + event.getFinalDamage());
     }
 
     @EventHandler
@@ -100,11 +148,11 @@ public class KillionGameplayListeners implements Listener {
                             return;
                         }
                         if (player.hasActiveItem()) {
-                            logger.sendDebug("Player is blocking");
+                            //logger.sendDebug("Player is blocking");
                             return;
                         }
                         playersBlocking.remove(playerId);
-                        logger.sendDebug("Player is no longer blocking");
+                        //logger.sendDebug("Player is no longer blocking");
                         this.cancel();
                     }
                 }
@@ -236,5 +284,108 @@ public class KillionGameplayListeners implements Listener {
         final ItemStack newStack = stack.clone();
         newStack.addEnchantment(Enchantment.VANISHING_CURSE, 1);
         return newStack;
+    }
+
+    private double calculateArmorEnchantmentReductionFactor(
+            List<ItemStack> armorEquipped,
+            EntityDamageEvent.DamageCause cause
+    ) {
+        int totalEpf = 0;
+        for (ItemStack item : armorEquipped) {
+            if (item == null || item.getType() == Material.AIR) {
+                continue;
+            }
+            for (EnchantmentType enchantmentType : EnchantmentType.values()) {
+                if (!enchantmentType.protectsAgainst(cause)) {
+                    continue;
+                }
+                int enchantmentLevel = item.getEnchantmentLevel(enchantmentType.enchantment);
+                if (enchantmentLevel > 0) {
+                    totalEpf += enchantmentType.getEpf(enchantmentLevel);
+                }
+            }
+        }
+
+        // Cap at 25
+        totalEpf = (int) Math.min(25.0, totalEpf);
+
+        // Multiply by random value between 50% and 100%, then round up
+        double multiplier = ThreadLocalRandom.current().nextDouble(0.5, 1.0);
+        totalEpf = (int) Math.ceil(totalEpf * multiplier);
+
+        // Cap at 20
+        totalEpf = (int) Math.min(20.0, totalEpf);
+
+        return REDUCTION_PER_ARMOR_POINT  * totalEpf;
+    }
+
+    @SuppressWarnings("deprecation")
+    private void calculateDefenceDamageReduction(
+            final LivingEntity damagedEntity,
+            final Map<EntityDamageEvent.DamageModifier, Double> modifiers,
+            final EntityDamageEvent.DamageCause damageCause
+    ) {
+        final AttributeInstance armorInstance = damagedEntity.getAttribute(Attribute.ARMOR);
+        double armorPoints = armorInstance != null ? armorInstance.getValue() : 0.0;
+        // Make sure we don't go over 100% protection
+        double armorReductionFactor = Math.min(1.0, armorPoints * REDUCTION_PER_ARMOR_POINT);
+
+        // applyArmorModifier() calculations from NMS
+        // Apply armor damage reduction after hard hat (wearing helmet & hit by block) and blocking reduction
+        double currentDamage = modifiers.getOrDefault(EntityDamageEvent.DamageModifier.BASE, 0.0) +
+                modifiers.getOrDefault(EntityDamageEvent.DamageModifier.HARD_HAT, 0.0) +
+                modifiers.getOrDefault(EntityDamageEvent.DamageModifier.BLOCKING, 0.0) ;
+
+        if (modifiers.containsKey(EntityDamageEvent.DamageModifier.ARMOR)) {
+            double armorReduction = 0.0;
+            // If the damage cause does not ignore armor
+            // If the block they are in is a stalagmite, also ignore armor
+            if (!ARMOR_IGNORING_CAUSES.contains(damageCause) &&
+                !(damageCause == EntityDamageEvent.DamageCause.CONTACT && damagedEntity.getLocation().getBlock().getType() == Material.POINTED_DRIPSTONE)
+            ) {
+                armorReduction = currentDamage * -armorReductionFactor;
+            }
+            modifiers.put(EntityDamageEvent.DamageModifier.ARMOR, armorReduction);
+            currentDamage += armorReduction;
+        }
+
+        // This is the applyMagicModifier() calculations from NMS
+        if (damageCause != EntityDamageEvent.DamageCause.STARVATION) {
+            // Apply resistance effect
+            if (modifiers.containsKey(EntityDamageEvent.DamageModifier.RESISTANCE) && damageCause != EntityDamageEvent.DamageCause.VOID &&
+                    damagedEntity.hasPotionEffect(PotionEffectType.RESISTANCE)
+            ) {
+                final PotionEffect effect = damagedEntity.getPotionEffect(PotionEffectType.RESISTANCE);
+                double level = (effect != null ? effect.getAmplifier() : 0) + 1;
+                // Make sure we don't go over 100% protection
+                double resistanceReductionFactor = Math.min(1.0, level * REDUCTION_PER_RESISTANCE_LEVEL);
+                double resistanceReduction = -resistanceReductionFactor * currentDamage;
+                modifiers.put(EntityDamageEvent.DamageModifier.RESISTANCE, resistanceReduction);
+                currentDamage += resistanceReduction;
+            }
+
+            // Apply armor enchants
+            // Don't calculate enchants if damage already 0 (like 1.8 NMS). Enchants cap at 80% reduction
+            if (currentDamage > 0 && modifiers.containsKey(EntityDamageEvent.DamageModifier.MAGIC)) {
+                final ArrayList<ItemStack> armorContents = new ArrayList<>();
+                if (damagedEntity.getEquipment() != null) {
+                    armorContents.addAll(
+                            Arrays.stream(damagedEntity.getEquipment().getArmorContents()).toList()
+                    );
+                }
+
+                double enchantsReductionFactor = calculateArmorEnchantmentReductionFactor(armorContents, damageCause);
+                double enchantsReduction = currentDamage * -enchantsReductionFactor;
+                modifiers.put(EntityDamageEvent.DamageModifier.MAGIC, enchantsReduction);
+                currentDamage += enchantsReduction;
+            }
+
+            // Absorption
+            if (modifiers.containsKey(EntityDamageEvent.DamageModifier.ABSORPTION)) {
+                double absorptionAmount = damagedEntity.getAbsorptionAmount();
+                double absorptionReduction = -Math.min(absorptionAmount, currentDamage);
+                modifiers.put(EntityDamageEvent.DamageModifier.ABSORPTION, absorptionReduction);
+            }
+        }
     }
 }
