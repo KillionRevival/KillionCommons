@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'co.killionrevival'
-version = '3.4-SNAPSHOT'
+version = '3.5-SNAPSHOT'
 
 repositories {
     gradlePluginPortal()

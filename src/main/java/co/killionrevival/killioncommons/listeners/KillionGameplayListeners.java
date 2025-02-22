@@ -66,17 +66,17 @@ public class KillionGameplayListeners implements Listener {
             Material.NETHERITE_SWORD
     );
     private final Set<EntityDamageEvent.DamageCause> ARMOR_IGNORING_CAUSES = Set.of(
-    EntityDamageEvent.DamageCause.FIRE_TICK,
-    EntityDamageEvent.DamageCause.SUFFOCATION,
-    EntityDamageEvent.DamageCause.DROWNING,
-    EntityDamageEvent.DamageCause.STARVATION,
-    EntityDamageEvent.DamageCause.FALL,
-    EntityDamageEvent.DamageCause.VOID,
-    EntityDamageEvent.DamageCause.CUSTOM,
-    EntityDamageEvent.DamageCause.MAGIC,
-    EntityDamageEvent.DamageCause.WITHER,  // From 1.9
-    EntityDamageEvent.DamageCause.FLY_INTO_WALL,
-    EntityDamageEvent.DamageCause.DRAGON_BREATH // In 1.19 FIRE bypasses armor, but it doesn't in 1.8 so we don't add it here
+            EntityDamageEvent.DamageCause.FIRE_TICK,
+            EntityDamageEvent.DamageCause.SUFFOCATION,
+            EntityDamageEvent.DamageCause.DROWNING,
+            EntityDamageEvent.DamageCause.STARVATION,
+            EntityDamageEvent.DamageCause.FALL,
+            EntityDamageEvent.DamageCause.VOID,
+            EntityDamageEvent.DamageCause.CUSTOM,
+            EntityDamageEvent.DamageCause.MAGIC,
+            EntityDamageEvent.DamageCause.WITHER,  // From 1.9
+            EntityDamageEvent.DamageCause.FLY_INTO_WALL,
+            EntityDamageEvent.DamageCause.DRAGON_BREATH // In 1.19 FIRE bypasses armor, but it doesn't in 1.8 so we don't add it here
     );
 
     final static Set<UUID> playersBlocking = new HashSet<>();

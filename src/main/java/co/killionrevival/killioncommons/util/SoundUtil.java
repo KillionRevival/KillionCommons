@@ -45,6 +45,12 @@ public class SoundUtil {
         location.getWorld().playSound(adventureSound);
     }
 
+    public static void playErrorSoundtoPlayer(
+            final Player player
+    ) {
+        playSoundToPlayer(player, org.bukkit.Sound.ENTITY_VILLAGER_NO, 1.0f, .75f);
+    }
+
     /**
      * Plays a sound to a player. If the namespaced key for the given Sound is null, the sound will not play.
      * @param player Player to play the sound to
