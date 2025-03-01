@@ -3,7 +3,7 @@ version: ${version}
 main: co.killionrevival.killioncommons.KillionCommons
 loader: co.killionrevival.killioncommons.KillionCommonsLoader
 authors: [tut, flyerzrule, Fross, DecryptedX]
-api-version: "1.21.3"
+api-version: "1.21.4"
 dependencies:
   server:
     ProtocolLib:
