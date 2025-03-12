@@ -1,6 +1,7 @@
 package co.killionrevival.killioncommons;
 
 import co.killionrevival.killioncommons.commands.CommonsCommand;
+import co.killionrevival.killioncommons.commands.PremiumTimerCommand;
 import co.killionrevival.killioncommons.commands.ScoreboardCommand;
 import co.killionrevival.killioncommons.config.KillionCommonsConfig;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
@@ -14,6 +15,8 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.PacketAdapter;
 import io.leangen.geantyref.TypeToken;
 import lombok.Getter;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.LuckPermsProvider;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -48,6 +51,9 @@ public final class KillionCommons extends JavaPlugin {
     @Getter
     private KillionScoreboardManager scoreboardManager;
 
+    @Getter
+    private static LuckPerms luckperms;
+
     @Override
     public void onEnable() {
         // Plugin startup logic
@@ -55,6 +61,7 @@ public final class KillionCommons extends JavaPlugin {
         util = new KillionUtilities(this, KillionCommonsConfig.class);
         util.getConfigUtil().saveDefaultConfig();
         customConfig = (KillionCommonsConfig) util.getConfigUtil().getConfigObject();
+        luckperms = LuckPermsProvider.get();
         initCompat();
         initListeners();
         initManagers();
@@ -90,8 +97,7 @@ public final class KillionCommons extends JavaPlugin {
         manager.addPacketListener(new AttackPacketListener(
                 new PacketAdapter.AdapterParameteters()
                         .plugin(this)
-                        .types(PacketType.Play.Client.USE_ENTITY)
-        ));
+                        .types(PacketType.Play.Client.USE_ENTITY)));
     }
 
     private void destroyCompat() {
@@ -99,10 +105,9 @@ public final class KillionCommons extends JavaPlugin {
 
     @SuppressWarnings("UnstableApiUsage")
     private void setUpCommands() {
-        commandManager =
-                PaperCommandManager.builder(PaperSimpleSenderMapper.simpleSenderMapper())
-                                   .executionCoordinator(ExecutionCoordinator.simpleCoordinator())
-                                   .buildOnEnable(this);
+        commandManager = PaperCommandManager.builder(PaperSimpleSenderMapper.simpleSenderMapper())
+                .executionCoordinator(ExecutionCoordinator.simpleCoordinator())
+                .buildOnEnable(this);
 
         commandManager.settings().set(ManagerSetting.ALLOW_UNSAFE_REGISTRATION, true);
         commandManager.settings().set(ManagerSetting.OVERRIDE_EXISTING_COMMANDS, true);
@@ -117,13 +122,13 @@ public final class KillionCommons extends JavaPlugin {
                     }
 
                     return null;
-                }
-        );
+                });
 
         util.getConsoleUtil().sendInfo("Registering commands:");
         annotationParser = new AnnotationParser<>(commandManager, Source.class, params -> SimpleCommandMeta.empty());
         annotationParser.parse(new ScoreboardCommand(scoreboardManager));
         annotationParser.parse(new CommonsCommand());
+        annotationParser.parse(new PremiumTimerCommand());
     }
 
     public static void reloadCustomConfig() {
