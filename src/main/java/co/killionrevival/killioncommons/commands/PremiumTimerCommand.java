@@ -20,7 +20,7 @@ import net.luckperms.api.node.types.InheritanceNode;
 public class PremiumTimerCommand {
 
     @Command(value = "premiumtimer", requiredSender = PlayerSource.class)
-    @CommandDescription("Request a player to drop their sword")
+    @CommandDescription("Get the amount of time left on your premium subscription")
     public void premiumtimer(final CommandSender sender) {
         Player player = (Player) sender;
 
