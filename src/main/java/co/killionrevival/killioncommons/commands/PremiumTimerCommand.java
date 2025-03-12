@@ -49,7 +49,7 @@ public class PremiumTimerCommand {
 
                     if (secondsLeft > 0) {
                         player.sendMessage(
-                            "Premium expires on:"
+                            "Premium expires on: "
                                 + DateUtil.getHumanReadableDateTimeString(Instant.now().plusSeconds(secondsLeft))
                                 + " (" + DateUtil.getTimeStringFromDuration(expiry)+ ")"
                         );
