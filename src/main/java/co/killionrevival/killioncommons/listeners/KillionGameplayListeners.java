@@ -26,6 +26,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityPotionEffectEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
@@ -183,22 +184,34 @@ public class KillionGameplayListeners implements Listener {
         inventory.setItem(event.getSlot(), modifiedItem);
     }
 
+    @EventHandler
+    public void removeMendingFromItemsWhenPlayerDies(final PlayerDeathEvent event) {
+        final List<ItemStack> drops = event.getDrops();
+        for (ItemStack drop : drops) {
+            final ItemStack dropNoMending = removeMendingFromItemIfExists(drop);
+            if (drop == dropNoMending) {
+                continue;
+            }
+            drops.set(drops.indexOf(drop), dropNoMending);
+        }
+    }
+
     /**
      * This method adds the Curse of Vanishing to any item that is enchanted with Mending.
      */
     @EventHandler
-    public void addCurseOfVanishingToAnythingEnchantedWithMendingWhenInventoryChange(final PlayerInventorySlotChangeEvent event) {
+    public void removeCurseOfVanishingFromMendingItemWhenInventoryChange(final PlayerInventorySlotChangeEvent event) {
         final Inventory inventory = event.getPlayer().getOpenInventory().getInventory(event.getRawSlot());
         if (inventory == null) {
             return;
         }
         final ItemStack newItem = event.getNewItemStack();
-        final ItemStack newItemWithCurse = addMendingEnchantToItemIfNotExists(newItem);
-        if (newItem == newItemWithCurse) {
+        final ItemStack newItemNoCurse = removeCurseFromMendingItemIfExists(newItem);
+        if (newItem == newItemNoCurse) {
             return;
         }
 
-        inventory.setItem(event.getSlot(), newItemWithCurse);
+        inventory.setItem(event.getSlot(), newItemNoCurse);
     }
 
 
@@ -275,15 +288,21 @@ public class KillionGameplayListeners implements Listener {
         return CraftItemStack.asBukkitCopy(nmsStack);
     }
 
-    private ItemStack addMendingEnchantToItemIfNotExists(final ItemStack stack) {
-        if (stack == null || !stack.containsEnchantment(Enchantment.MENDING)) {
-            return stack;
-        }
-        if (stack.containsEnchantment(Enchantment.VANISHING_CURSE)) {
+    private ItemStack removeCurseFromMendingItemIfExists(final ItemStack stack) {
+        if (stack == null || !stack.containsEnchantment(Enchantment.VANISHING_CURSE)) {
             return stack;
         }
         final ItemStack newStack = stack.clone();
-        newStack.addEnchantment(Enchantment.VANISHING_CURSE, 1);
+        newStack.removeEnchantment(Enchantment.VANISHING_CURSE);
+        return newStack;
+    }
+
+    private ItemStack removeMendingFromItemIfExists(final ItemStack stack) {
+        if (stack == null || !stack.containsEnchantment(Enchantment.MENDING)) {
+            return stack;
+        }
+        final ItemStack newStack = stack.clone();
+        newStack.removeEnchantment(Enchantment.MENDING);
         return newStack;
     }
 
