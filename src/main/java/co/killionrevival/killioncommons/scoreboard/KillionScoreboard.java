@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class KillionScoreboard {
@@ -24,12 +25,7 @@ public class KillionScoreboard {
         display = true;
         additionMap = new HashMap<>();
         manager.additions.values().forEach(
-                addition -> {
-                    final ScoreboardAddition clone = addition.clone();
-                    clone.setPlayer(player);
-                    clone.initWithPlayer(player);
-                    additionMap.put(addition.componentName(), clone);
-                }
+                map -> map.values().forEach(addition -> additionMap.put(addition.componentName(), addition))
         );
     }
 

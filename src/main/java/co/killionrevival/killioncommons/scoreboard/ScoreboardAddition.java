@@ -1,6 +1,7 @@
 package co.killionrevival.killioncommons.scoreboard;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;

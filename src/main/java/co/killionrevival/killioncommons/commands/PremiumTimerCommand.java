@@ -32,33 +32,59 @@ public class PremiumTimerCommand {
             return;
         }
 
+        final Duration premiumTimer = getRemainingPremiumTimer(player);
+
+        if (premiumTimer == null) {
+            player.sendMessage("You do not currently have premium. Use /buy to purchase it!");
+            return;
+        }
+        else if (premiumTimer == Duration.ofDays(Long.MAX_VALUE)) {
+            player.sendMessage("You have permanent premium!");
+            return;
+        }
+
+        player.sendMessage(
+                "Premium expires on: "
+                        + DateUtil.getHumanReadableDateTimeString(Instant.now().plusSeconds(premiumTimer.toSeconds()))
+                        + " (" + DateUtil.getTimeStringFromDuration(premiumTimer)+ ")"
+        );
+    }
+
+    /**
+     * Get the remaining time of a player's premium status
+     * @param player The player to check
+     * @return The remaining time of the player's premium status, or null if the player does not have premium, or a duration of
+     *         Long.MAX_VALUE days if the player has permanent premium
+     */
+    public static Duration getRemainingPremiumTimer(final Player player) {
+        if (!player.hasPermission("group.premium")) {
+            return null;
+        }
+
+        LuckPerms lp = KillionCommons.getLuckperms();
+        User user = lp.getUserManager().getUser(player.getUniqueId());
+
+        if (user == null) {
+            return null;
+        }
+
         for (Node node : user.getNodes()) {
-            if (node instanceof InheritanceNode) {
-                InheritanceNode groupNode = (InheritanceNode) node;
+            if (!(node instanceof InheritanceNode groupNode)) {
+                continue;
+            }
+            if (groupNode.getGroupName().equalsIgnoreCase("premium")) {
+                Duration expiry = node.getExpiryDuration();
 
-                if (groupNode.getGroupName()
-                             .equalsIgnoreCase("premium")) {
-                    Duration expiry = node.getExpiryDuration();
-
-                    if (expiry == null) {
-                        player.sendMessage("You have permanent premium!");
-                        return;
-                    }
-
-                    long secondsLeft = expiry.getSeconds();
-
-                    if (secondsLeft > 0) {
-                        player.sendMessage(
-                            "Premium expires on: "
-                                + DateUtil.getHumanReadableDateTimeString(Instant.now().plusSeconds(secondsLeft))
-                                + " (" + DateUtil.getTimeStringFromDuration(expiry)+ ")"
-                        );
-                        return;
-                    }
+                if (expiry == null) {
+                    return Duration.ofDays(Long.MAX_VALUE);
                 }
+
+                long secondsLeft = expiry.getSeconds();
+                return Duration.ofSeconds(secondsLeft);
             }
         }
 
-        player.sendMessage("You do not currently have premium. Use /buy to purchase it!");
+        // user has group.premium but no group with the name "premium" ??????
+        return null;
     }
 }

@@ -10,7 +10,10 @@ import org.incendo.cloud.annotations.Command;
 import org.incendo.cloud.annotations.suggestion.Suggestions;
 import org.incendo.cloud.paper.util.sender.PlayerSource;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Command("panel")
 public class ScoreboardCommand {
@@ -23,7 +26,11 @@ public class ScoreboardCommand {
 
     @Suggestions("components")
     public List<String> components() {
-        return scoreboardManager.getAdditions().values().stream().map(ScoreboardAddition::componentName).toList();
+        final Set<String> names = new HashSet<>();
+        for (final Map<String, ScoreboardAddition> map : scoreboardManager.getAdditions().values()) {
+            names.addAll(map.keySet());
+        }
+        return names.stream().toList();
     }
 
     @Command(value = "toggle [component]", requiredSender = PlayerSource.class)
@@ -41,9 +48,11 @@ public class ScoreboardCommand {
             return;
         }
 
-        final ScoreboardAddition addition = scoreboardManager.getAdditions().values().stream().filter(
-                scoreboardAddition -> scoreboardAddition.componentName().equalsIgnoreCase(component)
-        ).findFirst().orElse(null);
+        final ScoreboardAddition addition = scoreboardManager
+                .getScoreboardMap()
+                .get(player.getUniqueId())
+                .getAdditionMap()
+                .get(component);
         if (addition == null) {
             messageUtil.sendPrefixMessage(player, "Invalid component.");
             return;

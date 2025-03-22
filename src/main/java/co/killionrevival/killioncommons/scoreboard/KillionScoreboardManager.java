@@ -1,6 +1,7 @@
 package co.killionrevival.killioncommons.scoreboard;
 
 import co.killionrevival.killioncommons.KillionCommons;
+import co.killionrevival.killioncommons.scoreboard.exceptions.DuplicateComponentNameException;
 import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -9,18 +10,24 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 
 public class KillionScoreboardManager {
     private static final ConsoleUtil logger = KillionCommons.getUtil().getConsoleUtil();
 
+    final Map<String, Plugin> additionNameToPluginMap;
+
+    @Getter
     final Map<UUID, KillionScoreboard> scoreboardMap;
     @Getter
-    final Map<Plugin, ScoreboardAddition> additions;
+    final Map<Plugin, Map<String, ScoreboardAddition>> additions;
 
     public KillionScoreboardManager() {
         scoreboardMap = new HashMap<>();
+        additionNameToPluginMap = new TreeMap<>();
         additions = new HashMap<>();
         Bukkit.getScheduler().scheduleSyncRepeatingTask(
                 KillionCommons.getInstance(),
@@ -31,16 +38,32 @@ public class KillionScoreboardManager {
     }
 
     /**
-     * Register a scoreboard addition for your plugin.
+     * Register a new scoreboard addition for your plugin.
      * If it is registered outside of startup, it will be added to all current scoreboards.
+     * If your plugin has not registered an addition before, a new map will be initialized with the component name as the key
+     *
      * @param plugin The plugin registering the addition
      * @param addition The addition to register
      */
     public void registerAddition(
             final Plugin plugin,
             final ScoreboardAddition addition
-    ) {
-        additions.put(plugin, addition);
+    ) throws DuplicateComponentNameException {
+        if (additionNameToPluginMap.containsKey(addition.componentName())) {
+            throw new DuplicateComponentNameException(addition.componentName() + " is already registered by " + additionNameToPluginMap.get(addition.componentName()).getName());
+        }
+
+        if (!additions.containsKey(plugin)) {
+            additions.computeIfAbsent(plugin, k -> {
+                logger.sendDebug("Initializing new addition map for " + plugin.getName());
+                additionNameToPluginMap.put(addition.componentName(), plugin);
+                return Map.of(addition.componentName(), addition);
+            });
+            return;
+        }
+
+        additions.get(plugin).put(addition.componentName(), addition);
+        additionNameToPluginMap.put(addition.componentName(), plugin);
 
         if (!scoreboardMap.isEmpty()) {
             scoreboardMap.values().forEach(
@@ -50,16 +73,19 @@ public class KillionScoreboardManager {
     }
 
     /**
-     * Remove a scoreboard addition from the manager.
+     * Remove all scoreboard additions for a plugin from the manager.
      * If it is removed outside of shutdown, it will be removed from all current scoreboards.
      * @param plugin The plugin removing the addition
      */
     public void removeAdditions(final Plugin plugin) {
-        final ScoreboardAddition addition = additions.remove(plugin);
-
+        final Map<String, ScoreboardAddition> addition = additions.remove(plugin);
+        if (addition == null) {
+            return;
+        }
+        addition.keySet().forEach(additionNameToPluginMap::remove);
         if (!scoreboardMap.isEmpty()) {
             scoreboardMap.values().forEach(
-                    board -> board.additionMap.remove(addition.componentName())
+                    board -> addition.keySet().forEach(board.additionMap::remove)
             );
         }
     }
