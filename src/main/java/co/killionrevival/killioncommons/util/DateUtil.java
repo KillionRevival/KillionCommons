@@ -94,28 +94,59 @@ public class DateUtil {
      * Returns a string in the format common for plugins, in days/hours/minutes/seconds
      * Example: "30d2h5m30s". Can be parsed by {@link DateUtil#getDurationFromTimeString}
      *
+     * If longFormat is true, will instead write out the string in a more human-readable format.
+     * Example: "30 days, 2 hours, 5 minutes, 30 seconds". This cannot be parsed by {@link DateUtil#getDurationFromTimeString}
+     *
      * @param duration Duration to be parsed into a time string
+     * @param longFormat Whether to use a more human-readable format
      * @return A string in the format common for plugins, in days/hours/minutes/seconds. Example: "30d2h5m30s".
      */
-    public static String getTimeStringFromDuration(final Duration duration) {
+    public static String getTimeStringFromDuration(final Duration duration, final boolean longFormat) {
         final long days = duration.toDays();
         final long hours = duration.minusDays(days).toHours();
         final long minutes = duration.minusDays(days).minusHours(hours).toMinutes();
         final long seconds = duration.minusDays(days).minusHours(hours).minusMinutes(minutes).getSeconds();
         String output = "";
-        if (days > 0) {
-            output += days + "d";
-        }
-        if (hours > 0) {
-            output += hours + "h";
-        }
-        if (minutes > 0) {
-            output += minutes + "m";
-        }
-        if (seconds > 0) {
-            output += seconds + "s";
+
+        if (longFormat) {
+            if (days > 0) {
+                output += days + " days, ";
+            }
+            if (hours > 0) {
+                output += hours + " hours, ";
+            }
+            if (minutes > 0) {
+                output += minutes + " minutes, ";
+            }
+            if (seconds > 0) {
+                output += seconds + " seconds";
+            }
+        } else {
+            if (days > 0) {
+                output += days + "d";
+            }
+            if (hours > 0) {
+                output += hours + "h";
+            }
+            if (minutes > 0) {
+                output += minutes + "m";
+            }
+            if (seconds > 0) {
+                output += seconds + "s";
+            }
         }
 
         return output;
+    }
+
+    /**
+     * Returns a string in the format common for plugins, in days/hours/minutes/seconds
+     * Example: "30d2h5m30s". Can be parsed by {@link DateUtil#getDurationFromTimeString}
+     *
+     * @param duration Duration to be parsed into a time string
+     * @return A string in the format common for plugins, in days/hours/minutes/seconds. Example: "30d2h5m30s".
+     */
+    public static String getTimeStringFromDuration(final Duration duration) {
+        return getTimeStringFromDuration(duration, false);
     }
 }
