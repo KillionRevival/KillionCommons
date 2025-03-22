@@ -110,13 +110,13 @@ public class DateUtil {
 
         if (longFormat) {
             if (days > 0) {
-                output += days + " days, ";
+                output += days + " days ";
             }
             if (hours > 0) {
-                output += hours + " hours, ";
+                output += hours + " hours ";
             }
             if (minutes > 0) {
-                output += minutes + " minutes, ";
+                output += minutes + " minutes ";
             }
             if (seconds > 0) {
                 output += seconds + " seconds";
