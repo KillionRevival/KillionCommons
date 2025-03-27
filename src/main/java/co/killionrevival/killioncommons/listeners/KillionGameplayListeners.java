@@ -88,10 +88,11 @@ public class KillionGameplayListeners implements Listener {
             return;
         }
 
-        if (event.getEntity() instanceof final Player player
-                && event.getDamager() instanceof final Player damagingPlayer
-                && playersBlocking.contains(player.getUniqueId())
-        ) {
+        if (!(event.getEntity() instanceof final Player player) || !(event.getDamager() instanceof final Player damagingPlayer)) {
+            return;
+        }
+
+        if (playersBlocking.contains(player.getUniqueId())) {
             logger.sendDebug("Player " + player.getName() + " was blocking, reducing damage");
             double baseDamage = event.getDamage();
             if (baseDamage > 0) {
