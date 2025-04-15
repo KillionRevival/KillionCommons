@@ -12,3 +12,5 @@ dependencies:
       load: BEFORE
     Vault:
         load: BEFORE
+    StackMob:
+        lad: BEFORE

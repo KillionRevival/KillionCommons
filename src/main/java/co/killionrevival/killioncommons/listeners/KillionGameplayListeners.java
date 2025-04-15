@@ -34,6 +34,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import uk.antiperson.stackmob.events.StackDropItemEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -216,19 +217,17 @@ public class KillionGameplayListeners implements Listener {
 
 
     @EventHandler
-    public void removeMobDropsUnlessKilledByPlayer(final EntityDeathEvent event) {
-        if (!(event.getEntity() instanceof Mob eventMob)) {
-            return;
+    public void removeMobDropsUnlessKilledByPlayer(final StackDropItemEvent stackEvent) {
+        final EntityDeathEvent event = stackEvent.getOriginalEvent();
+        final boolean wasPlayerKill = wasValidPlayerKill(event);
+        if (!wasPlayerKill) {
+            stackEvent.getDrops().clear();
         }
-        final EntityDamageEvent cause = event.getEntity().getLastDamageCause();
-        if (cause == null) {
-            KillionCommons.getUtil().getConsoleUtil().sendDebug(
-                    "Mob died but had no last cause of damage, cannot prevent event." +
-                            "\nMob: " + eventMob.getName());
-            return;
-        }
+    }
 
-        final boolean wasPlayerKill = playerDamageCauses.contains(cause.getCause()) && eventMob.getKiller() != null;
+    @EventHandler
+    public void removeMobDropsUnlessKilledByPlayer(final EntityDeathEvent event) {
+        final boolean wasPlayerKill = wasValidPlayerKill(event);
         if (!wasPlayerKill) {
             event.setDroppedExp(0);
             event.getDrops().clear();
@@ -407,5 +406,20 @@ public class KillionGameplayListeners implements Listener {
                 modifiers.put(EntityDamageEvent.DamageModifier.ABSORPTION, absorptionReduction);
             }
         }
+    }
+
+    private boolean wasValidPlayerKill(final EntityDeathEvent event) {
+        if (!(event.getEntity() instanceof Mob eventMob)) {
+            return false;
+        }
+        final EntityDamageEvent cause = event.getEntity().getLastDamageCause();
+        if (cause == null) {
+            KillionCommons.getUtil().getConsoleUtil().sendDebug(
+                    "Mob died but had no last cause of damage, cannot prevent event." +
+                            "\nMob: " + eventMob.getName());
+            return false;
+        }
+
+        return playerDamageCauses.contains(cause.getCause()) && eventMob.getKiller() != null;
     }
 }
