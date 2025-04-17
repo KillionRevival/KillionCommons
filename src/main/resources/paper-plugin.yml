@@ -13,4 +13,6 @@ dependencies:
     Vault:
         load: BEFORE
     StackMob:
-        lad: BEFORE
+        load: BEFORE
+    WorldGuard:
+        load: BEFORE

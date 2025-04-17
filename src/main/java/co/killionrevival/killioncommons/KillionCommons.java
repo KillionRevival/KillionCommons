@@ -3,6 +3,7 @@ package co.killionrevival.killioncommons;
 import co.killionrevival.killioncommons.commands.CommonsCommand;
 import co.killionrevival.killioncommons.commands.PremiumTimerCommand;
 import co.killionrevival.killioncommons.commands.ScoreboardCommand;
+import co.killionrevival.killioncommons.compat.WorldGuardCompat;
 import co.killionrevival.killioncommons.config.KillionCommonsConfig;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
 import co.killionrevival.killioncommons.npc.NpcManager;
@@ -18,6 +19,7 @@ import lombok.Getter;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.LuckPermsProvider;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.incendo.cloud.annotations.AnnotationParser;
@@ -55,6 +57,11 @@ public final class KillionCommons extends JavaPlugin {
     private static LuckPerms luckperms;
 
     @Override
+    public void onLoad() {
+        WorldGuardCompat.init();
+    }
+
+    @Override
     public void onEnable() {
         // Plugin startup logic
         instance = this;
@@ -75,6 +82,10 @@ public final class KillionCommons extends JavaPlugin {
         // Plugin shutdown logic
         destroyCompat();
         util.getConsoleUtil().sendSuccess("KillionCommons has been disabled.");
+    }
+
+    private void initWorldGuard() {
+
     }
 
     private void initManagers() {
