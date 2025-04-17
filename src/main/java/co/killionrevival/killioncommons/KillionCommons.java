@@ -6,6 +6,7 @@ import co.killionrevival.killioncommons.commands.ScoreboardCommand;
 import co.killionrevival.killioncommons.compat.WorldGuardCompat;
 import co.killionrevival.killioncommons.config.KillionCommonsConfig;
 import co.killionrevival.killioncommons.listeners.KillionGameplayListeners;
+import co.killionrevival.killioncommons.listeners.WorldGuardListeners;
 import co.killionrevival.killioncommons.npc.NpcManager;
 import co.killionrevival.killioncommons.npc.listeners.AttackPacketListener;
 import co.killionrevival.killioncommons.scoreboard.KillionScoreboardManager;
@@ -96,6 +97,7 @@ public final class KillionCommons extends JavaPlugin {
     private void initListeners() {
         getServer().getPluginManager().registerEvents(new KillionGameplayListeners(), this);
         getServer().getPluginManager().registerEvents(new ScoreboardListeners(), this);
+        getServer().getPluginManager().registerEvents(new WorldGuardListeners(), this);
         util.getConsoleUtil().sendSuccess("KillionCommons listeners initialized.");
     }
 
