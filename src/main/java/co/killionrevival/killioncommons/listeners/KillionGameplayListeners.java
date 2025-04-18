@@ -227,6 +227,9 @@ public class KillionGameplayListeners implements Listener {
 
     @EventHandler
     public void removeMobDropsUnlessKilledByPlayer(final EntityDeathEvent event) {
+        if (!(event.getEntity() instanceof Mob)) {
+            return;
+        }
         final boolean wasPlayerKill = wasValidPlayerKill(event);
         if (!wasPlayerKill) {
             event.setDroppedExp(0);
