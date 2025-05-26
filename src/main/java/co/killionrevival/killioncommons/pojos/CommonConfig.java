@@ -7,4 +7,5 @@ package co.killionrevival.killioncommons.pojos;
 public class CommonConfig {
     boolean debugMode;
     String credentialsFilePath;
+    String pluginPrefix;
 }

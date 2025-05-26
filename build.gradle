@@ -8,7 +8,7 @@ plugins {
 }
 
 group = 'co.killionrevival'
-version = '4.4'
+version = '4.4.1'
 
 repositories {
     mavenLocal()

@@ -17,11 +17,15 @@ public class MessageUtil {
     public MessageUtil(final Plugin plugin) {
         final InputStream jsonConfig = IOUtil.getPluginFile(plugin, "config.json");
         if (jsonConfig == null) {
-            this.prefix = plugin.getConfig().getString("plugin-prefix");
+            final String old = plugin.getConfig().getString("plugin-prefix");
+            final String newStr = plugin.getConfig().getString("pluginPrefix");
+            this.prefix = old == null ? newStr : old;
             return;
         }
         final ConfigUtil configUtil = new ConfigUtil(plugin);
-        this.prefix = configUtil.getJsonMember("plugin-prefix").getAsString();
+        final String old = configUtil.getJsonMember("plugin-prefix").getAsString();
+        final String newStr = configUtil.getJsonMember("pluginPrefix").getAsString();
+        this.prefix = old == null ? newStr : old;
     }
 
     /**

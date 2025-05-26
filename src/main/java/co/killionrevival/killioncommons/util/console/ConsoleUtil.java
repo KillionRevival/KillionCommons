@@ -182,13 +182,19 @@ public class ConsoleUtil {
         String prefix = null;
         if (IOUtil.getPluginFile(plugin, "config.json") != null) {
             final ConfigUtil configUtil = new ConfigUtil(plugin);
-            final JsonElement element = configUtil.getJsonMember("plugin-prefix");
-            if (element != null) {
-                prefix = element.getAsString();
+            final JsonElement oldElement = configUtil.getJsonMember("plugin-prefix");
+            final JsonElement newElement = configUtil.getJsonMember("pluginPrefix");
+            if (oldElement == null && newElement != null) {
+                prefix = newElement.getAsString();
+            }
+            else if (oldElement != null) {
+                prefix = oldElement.getAsString();
             }
         }
         if (prefix == null) {
-            prefix = plugin.getConfig().getString("plugin-prefix");
+            final String old = plugin.getConfig().getString("plugin-prefix");
+            final String newStr = plugin.getConfig().getString("pluginPrefix");
+            prefix = old == null ? newStr : old;
         }
 
         if (prefix == null || prefix.isEmpty()) {
