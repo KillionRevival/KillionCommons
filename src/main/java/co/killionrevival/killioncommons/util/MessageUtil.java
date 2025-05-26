@@ -23,8 +23,10 @@ public class MessageUtil {
             return;
         }
         final ConfigUtil configUtil = new ConfigUtil(plugin);
-        final String old = configUtil.getJsonMember("plugin-prefix").getAsString();
-        final String newStr = configUtil.getJsonMember("pluginPrefix").getAsString();
+        final String old = configUtil.getJsonMember("plugin-prefix") != null ?
+                configUtil.getJsonMember("plugin-prefix").getAsString() : null;
+        final String newStr = configUtil.getJsonMember("pluginPrefix") != null ?
+                configUtil.getJsonMember("pluginPrefix").getAsString() : null;
         this.prefix = old == null ? newStr : old;
     }
 
