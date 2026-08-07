@@ -9,11 +9,14 @@ import co.killionrevival.killioncommons.util.console.ConsoleUtil;
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -26,8 +29,30 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 public class NpcManager {
+    /**
+     * Swallows every broadcast the tracker would normally make. We send the spawn packets by hand
+     * to the players in render distance instead.
+     */
+    private final static ServerEntity.Synchronizer SILENT_SYNCHRONIZER = new ServerEntity.Synchronizer() {
+        @Override
+        public void sendToTrackingPlayers(final Packet<? super ClientGamePacketListener> packet) {
+        }
+
+        @Override
+        public void sendToTrackingPlayersAndSelf(final Packet<? super ClientGamePacketListener> packet) {
+        }
+
+        @Override
+        public void sendToTrackingPlayersFiltered(
+                final Packet<? super ClientGamePacketListener> packet,
+                final Predicate<ServerPlayer> filter
+        ) {
+        }
+    };
+
     final static KillionCommons instance = KillionCommons.getInstance();
     final ConsoleUtil consoleUtil;
     final SkinUtil skinUtil;
@@ -51,8 +76,7 @@ public class NpcManager {
                 npc,
                 0,
                 false,
-                (packet) -> {
-                },
+                SILENT_SYNCHRONIZER,
                 new HashSet<>());
 
         final ArrayList<Player> playersInRender = new ArrayList<>(world.getNearbyPlayers(locationToSpawnAt, 128));
@@ -92,7 +116,7 @@ public class NpcManager {
         final GameProfile profile = new GameProfile(npcProfile.getId(), npcProfile.getName());
         if (npcToSpawn.getPlayerRepresentation() != null) {
             final SkinData data = KillionCommons.getUtil().getSkinUtil().getSkin(npcProfile.getId());
-            profile.getProperties().put("textures", new Property("textures", data.getTexture(), data.getSignature()));
+            profile.properties().put("textures", new Property("textures", data.getTexture(), data.getSignature()));
         }
 
         final KillionNpcNms npc = new KillionNpcNms(

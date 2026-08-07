@@ -1,14 +1,13 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
     id 'java'
     id 'maven-publish'
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
-    id "io.freefair.lombok" version "8.10"
-    id 'com.gradleup.shadow' version '8.3.0'
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
+    id "io.freefair.lombok" version "9.5.0"
+    id 'com.gradleup.shadow' version '9.6.1'
 }
 
 group = 'co.killionrevival'
-version = '4.4.1'
+version = '5.0.0'
 
 repositories {
     mavenLocal()
@@ -30,45 +29,49 @@ repositories {
     maven { url 'https://jitpack.io' }
     maven { url "https://repo.dmulloy2.net/repository/public/" }
     maven { url "https://maven.enginehub.org/repo/" }
+    // StackMob
+    maven { url "https://repo.codemc.io/repository/maven-public/" }
 }
 
 dependencies {
-    paperweight.paperDevBundle('1.21.4-R0.1-SNAPSHOT')
+    paperweight.paperDevBundle('26.2.build.+')
 
-    compileOnly 'org.projectlombok:lombok:1.18.32'
     compileOnly 'com.comphenix.protocol:ProtocolLib:5.3.0'
-    compileOnly 'com.sk89q.worldguard:worldguard-bukkit:7.0.13'
+    // Gson/Guava are provided by the server; WorldEdit pins them 'strictly' to older versions
+    // than paper-api ships, which deadlocks resolution if we let them through.
+    compileOnly ('com.sk89q.worldguard:worldguard-bukkit:7.0.18') {
+        exclude group: 'com.google.code.gson', module: 'gson'
+        exclude group: 'com.google.guava', module: 'guava'
+    }
     compileOnly "net.luckperms:api:5.4"
 
     implementation 'com.google.code.gson:gson:2.11.0'
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'com.zaxxer:HikariCP:5.1.0'
 
-    implementation 'fr.mrmicky:fastboard:2.1.3'
+    implementation 'fr.mrmicky:fastboard:2.2.1'
 
     compileOnly ("com.github.MilkBowl:VaultAPI:1.7.1") {
         exclude group: 'org.bukkit', module: 'bukkit'
     }
-    compileOnly ('net.essentialsx:EssentialsX:2.20.1') {
+    compileOnly ('net.essentialsx:EssentialsX:2.21.2') {
         exclude group: 'org.bstats', module: 'bstats-bukkit'
         exclude group: 'org.spigotmc', module: 'spigot-api'
     }
-    compileOnly 'uk.antiperson.stackmob:StackMob:5.10.2-fuck'
+    compileOnly 'uk.antiperson.stackmob:StackMob:5.10.7'
 
     implementation "org.incendo:cloud-core:2.0.0"
     implementation "org.incendo:cloud-annotations:2.0.0"
     annotationProcessor "org.incendo:cloud-annotations:2.0.0"
-    implementation "org.incendo:cloud-paper:2.0.0-beta.10"
+    implementation "org.incendo:cloud-paper:2.0.0"
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = 25
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
     targetCompatibility = javaVersion
-    if (JavaVersion.current() < javaVersion) {
-        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
-    }
+    toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
 
     withJavadocJar()
     withSourcesJar()
@@ -102,12 +105,14 @@ sourcesJar {
     from sourceSets.main.delombokTask
 }
 
-assemble {
-    // dependsOn(tasks.shadowJar)
-    dependsOn reobfJar
+// shadowJar is the production artifact: it carries the relocated FastBoard/Cloud classes.
+// The plain jar is Mojang-mapped but unshaded, so it gets pushed to the 'dev' classifier.
+jar {
+    archiveClassifier = 'dev'
 }
 
 shadowJar {
+    archiveClassifier = ''
     relocate 'fr.mrmicky.fastboard', 'co.killionrevival.fastboard'
     relocate 'org.incendo.cloud', 'co.killionrevival.cloud'
 }
@@ -118,7 +123,7 @@ publishing {
             artifactId 'killioncommons'
 
             artifacts {
-                artifact reobfJar.outputJar
+                artifact shadowJar
                 artifact sourcesJar
                 artifact javadocJar
             }
